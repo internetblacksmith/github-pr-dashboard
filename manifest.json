@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub PR Dashboard",
+  "version": "1.0.0",
+  "description": "New tab page showing your GitHub PRs, reviews, and unread comments",
+  "permissions": ["storage"],
+  "host_permissions": ["https://api.github.com/*"],
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "github-pr-dashboard@prdashboard",
+      "strict_min_version": "109.0"
+    }
+  },
+  "icons": {
+    "128": "icons/icon128.png"
+  }
+}

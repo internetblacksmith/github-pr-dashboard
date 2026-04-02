@@ -1,0 +1,19 @@
+{
+  "name": "github_chrome_new_tab",
+  "version": "1.0.0",
+  "description": "",
+  "main": "github.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "vitest": "4.1.2"
+  }
+}

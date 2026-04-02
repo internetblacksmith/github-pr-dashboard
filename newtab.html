@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Tab</title>
+  <link rel="stylesheet" href="newtab.css">
+</head>
+<body>
+
+  <!-- Setup screen: shown when no token is stored -->
+  <div id="setup-screen" class="screen" hidden>
+    <div class="setup-card">
+      <h2>GitHub PR Dashboard</h2>
+      <p>Set up your GitHub token to get started.</p>
+      <ol class="setup-steps">
+        <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a fine-grained token</a> with <strong>Pull requests</strong> (read) access on all repositories</li>
+        <li>Paste it below</li>
+      </ol>
+      <p class="setup-alt">Or use a <a href="https://github.com/settings/tokens/new?description=GitHub%20PR%20Dashboard&scopes=repo" target="_blank" rel="noopener">classic token</a> with <code>repo</code> scope.</p>
+      <form id="setup-form">
+        <label for="setup-token">GitHub Token</label>
+        <input type="password" id="setup-token" placeholder="ghp_..." autocomplete="off" autofocus>
+        <button type="submit">Save</button>
+      </form>
+      <p id="setup-error" class="error" hidden></p>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="screen screen-wide" hidden>
+    <header>
+      <div class="header-left">
+        <h1>GitHub PRs</h1>
+        <span id="username-badge" class="badge" hidden></span>
+      </div>
+      <div class="header-right">
+        <span id="last-updated" class="meta"></span>
+        <button id="refresh-btn" class="icon-btn" title="Refresh">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </button>
+        <button id="settings-btn" class="icon-btn" title="Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+        <button id="logout-btn" class="icon-btn danger" title="Clear token &amp; logout">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="loading" hidden>
+      <div class="spinner"></div>
+      <p id="loading-status"></p>
+    </div>
+
+    <div id="error-banner" class="error-banner" hidden></div>
+
+    <div id="pr-columns" hidden>
+      <!-- Review Requested -->
+      <section id="section-review-requested" class="pr-column" hidden>
+        <h2 class="column-title">
+          Review Requested
+          <span class="count" id="count-review-requested"></span>
+        </h2>
+        <div id="list-review-requested" class="pr-list"></div>
+      </section>
+
+      <!-- Your Open PRs -->
+      <section id="section-authored" class="pr-column" hidden>
+        <h2 class="column-title">
+          Your PRs
+          <span class="count" id="count-authored"></span>
+        </h2>
+        <div id="list-authored" class="pr-list"></div>
+      </section>
+
+      <!-- Personal Projects -->
+      <section id="section-personal" class="pr-column" hidden>
+        <h2 class="column-title">
+          Personal Projects
+          <span class="count" id="count-personal"></span>
+        </h2>
+        <div id="list-personal" class="pr-list"></div>
+      </section>
+
+      <div id="empty-state" hidden>
+        <p class="empty-message">No open PRs. Go touch some grass.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div id="settings-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button id="settings-close" class="icon-btn" title="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label for="work-orgs-input">Work organisations</label>
+        <p class="field-hint">Comma-separated org or owner names. PRs in these repos show under <strong>Work</strong>; everything else is <strong>Personal</strong>.</p>
+        <input type="text" id="work-orgs-input" placeholder="e.g. my-company, my-company-tools">
+
+        <label for="personal-orgs-input">Personal organisations</label>
+        <p class="field-hint">Additional personal orgs to track. Your own repos are always included.</p>
+        <input type="text" id="personal-orgs-input" placeholder="e.g. my-oss-org, side-project-org">
+
+        <label for="theme-select">Theme</label>
+        <div class="theme-picker" id="theme-picker">
+          <button type="button" data-theme="system" class="theme-option active" title="System">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            System
+          </button>
+          <button type="button" data-theme="light" class="theme-option" title="Light">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            Light
+          </button>
+          <button type="button" data-theme="dark" class="theme-option" title="Dark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+            Dark
+          </button>
+        </div>
+
+        <button id="settings-save" class="btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="github.js"></script>
+  <script src="score.js"></script>
+  <script src="newtab.js"></script>
+</body>
+</html>
