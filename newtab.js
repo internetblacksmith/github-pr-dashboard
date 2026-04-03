@@ -6,9 +6,9 @@
  *    - No  -> show setup screen
  *    - Yes -> fetch data and render dashboard
  *
- * PRs are grouped by Work / Personal based on user-configured org names.
+ * Each org gets a colour badge derived from its name, overridable in settings.
  * A "Personal Projects" column shows all open PRs in the user's repos
- * and any additional personal orgs, grouped by org/owner.
+ * and any additional personal orgs.
  *
  * Works on both Chrome (chrome.*) and Firefox (browser.*).
  */
@@ -26,9 +26,26 @@ const loading = document.getElementById("loading");
 const errorBanner = document.getElementById("error-banner");
 const settingsModal = document.getElementById("settings-modal");
 
+function translatePage() {
+  document.querySelectorAll("[data-i18n]").forEach(function (el) {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-tooltip]").forEach(function (el) {
+    el.dataset.tooltip = t(el.dataset.i18nTooltip);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
+    el.setAttribute("aria-label", t(el.dataset.i18nAria));
+  });
+  document.title = t("appName");
+}
+
 async function init() {
   try {
     await applyTheme();
+    translatePage();
 
     const token = await getStored("githubToken");
 
@@ -89,13 +106,6 @@ function getStored(key) {
   });
 }
 
-function setStored(data) {
-  return storageSet(data);
-}
-
-function removeStored(keys) {
-  return storageRemove(keys);
-}
 
 var DEFAULT_COLORS = ["#58a6ff", "#bc8cff", "#3fb950", "#d29922", "#f85149", "#8b949e"];
 
@@ -115,6 +125,53 @@ function getOrgLookup(orgConfig) {
 
 function getPersonalOrgNames(orgConfig) {
   return orgConfig.map(function (o) { return o.name.toLowerCase(); });
+}
+
+// --- Org colours ---
+
+function hashOrgColor(name) {
+  var hash = 0;
+  for (var i = 0; i < name.length; i++) {
+    hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
+  }
+  var hue = Math.abs(hash) % 360;
+  return hslToHex(hue, 65, 55);
+}
+
+function hslToHex(h, s, l) {
+  s /= 100;
+  l /= 100;
+  var a = s * Math.min(l, 1 - l);
+  function f(n) {
+    var k = (n + h / 30) % 12;
+    var val = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * val).toString(16).padStart(2, "0");
+  }
+  return "#" + f(0) + f(8) + f(4);
+}
+
+function hexToRgba(hex, alpha) {
+  var r = parseInt(hex.slice(1, 3), 16);
+  var g = parseInt(hex.slice(3, 5), 16);
+  var b = parseInt(hex.slice(5, 7), 16);
+  return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+}
+
+function getOrgColor(orgName, orgLookup, orgColorOverrides) {
+  var key = orgName.toLowerCase();
+  // Color override from the org colours section takes priority
+  if (orgColorOverrides && orgColorOverrides[key]) {
+    var hex = orgColorOverrides[key];
+    return { color: hex, bg: hexToRgba(hex, 0.1) };
+  }
+  // Then check the org config list
+  var conf = orgLookup && orgLookup[key];
+  var color = conf ? conf.color : hashOrgColor(orgName);
+  return { color: color, bg: hexToRgba(color, 0.1) };
+}
+
+async function getOrgColorOverrides() {
+  return (await getStored("orgColors")) || {};
 }
 
 // --- Theme ---
@@ -150,7 +207,6 @@ async function loadThemePicker() {
   });
 }
 
-
 // --- Setup form ---
 
 function setupSetupForm() {
@@ -165,13 +221,13 @@ function setupSetupForm() {
     var token = document.getElementById("setup-token").value.trim();
 
     if (!token) {
-      showError(errorEl, "Token is required");
+      showError(errorEl, t("tokenRequired"));
       return;
     }
 
     try {
       var username = await fetchUsername(token);
-      await setStored({ githubToken: token, githubUsername: username });
+      await storageSet({ githubToken: token, githubUsername: username });
 
       showScreen(dashboard);
       setupHeaderButtons(token);
@@ -179,8 +235,8 @@ function setupSetupForm() {
     } catch (err) {
       console.error("Setup failed:", err);
       var msg = err.message?.includes("401")
-        ? "Invalid token — check your PAT"
-        : "Setup failed. Check the console for details.";
+        ? t("tokenInvalid")
+        : t("setupFailed");
       showError(errorEl, msg);
     }
   };
@@ -190,7 +246,7 @@ function setupSetupForm() {
 
 function setupHeaderButtons(token) {
   document.getElementById("refresh-btn").onclick = async function () {
-    await removeStored(["dashboardCache", "dashboardCacheTime"]);
+    await storageRemove(["dashboardCache", "dashboardCacheTime"]);
     await loadDashboard(token);
   };
 
@@ -199,23 +255,34 @@ function setupHeaderButtons(token) {
   settingsModal.onclick = function (e) {
     if (e.target === settingsModal) closeSettings();
   };
-  // Close settings on Escape key
-  document.addEventListener("keydown", function (e) {
+  // Close settings on Escape key (use onkeydown to avoid stacking on re-init)
+  document.onkeydown = function (e) {
     if (e.key === "Escape" && !settingsModal.hidden) closeSettings();
-  });
+  };
   setupThemePicker();
 
   document.getElementById("add-org-btn").onclick = function () {
-    addOrgRow({ name: "", color: DEFAULT_COLORS[document.querySelectorAll(".org-row").length % DEFAULT_COLORS.length], work: false }, "");
+    addOrgRow({ name: "", color: DEFAULT_COLORS[document.querySelectorAll(".org-row").length % DEFAULT_COLORS.length] }, "");
   };
 
   document.getElementById("settings-save").onclick = async function () {
+    var oldOrgs = await getOrgConfig();
     var orgs = collectOrgConfig();
+    var orgColors = {};
+    document.querySelectorAll(".org-color-override").forEach(function (input) {
+      orgColors[input.dataset.org] = input.value;
+    });
     var activeTheme = document.querySelector(".theme-option.active");
     var theme = activeTheme ? activeTheme.dataset.theme : "system";
-    await setStored({ orgs: orgs, theme: theme });
+    await storageSet({ orgs: orgs, orgColors: orgColors, theme: theme });
     closeSettings();
-    await removeStored(["dashboardCache", "dashboardCacheTime"]);
+
+    // Only re-fetch if the org names changed; color/theme changes just re-render
+    var oldNames = oldOrgs.map(function (o) { return o.name; }).join(",");
+    var newNames = orgs.map(function (o) { return o.name; }).join(",");
+    if (oldNames !== newNames) {
+      await storageRemove(["dashboardCache", "dashboardCacheTime"]);
+    }
     await loadDashboard(token);
   };
 
@@ -225,22 +292,25 @@ function setupHeaderButtons(token) {
   logoutBtn.onclick = async function () {
     if (!logoutPending) {
       logoutPending = true;
-      logoutBtn.title = "Click again to confirm";
+      logoutBtn.dataset.tooltip = t("tooltipLogoutConfirm");
       logoutBtn.classList.add("confirm");
       setTimeout(function () {
         logoutPending = false;
-        logoutBtn.title = "Clear token & logout";
+        logoutBtn.dataset.tooltip = t("tooltipLogout");
         logoutBtn.classList.remove("confirm");
       }, 3000);
       return;
     }
-    await removeStored(["githubToken", "githubUsername", "orgs", "theme", "dashboardCache", "dashboardCacheTime"]);
+    await storageRemove(["githubToken", "githubUsername", "orgs", "orgColors", "theme", "dashboardCache", "dashboardCacheTime"]);
     showScreen(setupScreen);
     setupSetupForm();
   };
 }
 
+var settingsPreviousFocus = null;
+
 async function openSettings() {
+  settingsPreviousFocus = document.activeElement;
   var orgConfig = await getOrgConfig();
   var username = (await getStored("githubUsername")) || "";
 
@@ -248,7 +318,7 @@ async function openSettings() {
   if (username) {
     var hasOwn = orgConfig.some(function (o) { return o.name.toLowerCase() === username.toLowerCase(); });
     if (!hasOwn) {
-      orgConfig.push({ name: username, color: "#8b949e", work: false, isUser: true });
+      orgConfig.push({ name: username, color: "#8b949e", isUser: true });
     } else {
       // Mark the existing entry so we know not to allow deletion
       for (var i = 0; i < orgConfig.length; i++) {
@@ -260,8 +330,33 @@ async function openSettings() {
   }
 
   renderOrgList(orgConfig, username);
+  await loadOrgColorPickers();
   await loadThemePicker();
   settingsModal.hidden = false;
+
+  // Focus the first input inside the modal
+  var firstInput = settingsModal.querySelector("input, button:not(#settings-close)");
+  if (firstInput) firstInput.focus();
+
+  // Focus trap within the modal
+  settingsModal.onkeydown = function (e) {
+    if (e.key !== "Tab") return;
+    var focusable = settingsModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable.length === 0) return;
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  };
 }
 
 function renderOrgList(orgs, username) {
@@ -279,31 +374,30 @@ function addOrgRow(org, username) {
   row.className = "org-row" + (locked ? " org-row-locked" : "");
   row.draggable = true;
 
-  row.innerHTML = '<span class="org-drag-handle">&#x2630;</span>'
-    + (locked
-      ? '<span class="org-name-label">' + escapeHtml(org.name) + '</span>'
-      : '<input type="text" class="org-name-input" value="' + escapeAttr(org.name) + '" placeholder="org-name">')
+  row.innerHTML = '<span class="org-drag-handle" aria-label="' + escapeAttr(t("dragHandle")) + '">&#x2630;</span>'
+    + '<span class="org-reorder-btns">'
+    + '<button type="button" class="org-move-btn" data-dir="up" aria-label="' + escapeAttr(t("moveUp")) + '">&#x25B2;</button>'
+    + '<button type="button" class="org-move-btn" data-dir="down" aria-label="' + escapeAttr(t("moveDown")) + '">&#x25BC;</button>'
+    + '</span>'
+    + '<input type="text" class="org-name-input" value="' + escapeAttr(org.name) + '" placeholder="' + escapeAttr(t("orgPlaceholder")) + '"' + (locked ? " disabled" : "") + '>'
     + '<input type="color" class="org-color-input" value="' + escapeAttr(org.color || "#8b949e") + '">'
-    + '<button type="button" class="org-work-toggle ' + (org.work ? "active" : "") + '">work</button>'
-    + (locked ? '' : '<button type="button" class="org-delete-btn">&times;</button>');
+    + '<button type="button" class="org-delete-btn has-tooltip" data-tooltip="' + escapeAttr(locked ? t("tooltipAccountLocked") : t("tooltipRemoveOrg")) + '"' + (locked ? " disabled" : "") + '>&times;</button>';
 
-  if (locked) {
-    // Store the name in a hidden input so collectOrgConfig picks it up
-    var hidden = document.createElement("input");
-    hidden.type = "hidden";
-    hidden.className = "org-name-input";
-    hidden.value = org.name;
-    row.appendChild(hidden);
-  }
-
-  row.querySelector(".org-work-toggle").onclick = function () {
-    this.classList.toggle("active");
+  row.querySelector(".org-delete-btn").onclick = function () {
+    if (!this.disabled) row.remove();
   };
 
-  var deleteBtn = row.querySelector(".org-delete-btn");
-  if (deleteBtn) {
-    deleteBtn.onclick = function () { row.remove(); };
-  }
+  // Keyboard reorder buttons
+  row.querySelectorAll(".org-move-btn").forEach(function (btn) {
+    btn.onclick = function () {
+      if (btn.dataset.dir === "up" && row.previousElementSibling) {
+        list.insertBefore(row, row.previousElementSibling);
+      } else if (btn.dataset.dir === "down" && row.nextElementSibling) {
+        list.insertBefore(row.nextElementSibling, row);
+      }
+      btn.focus();
+    };
+  });
 
   // Drag and drop reordering
   row.addEventListener("dragstart", function (e) {
@@ -349,7 +443,6 @@ function collectOrgConfig() {
     orgs.push({
       name: name,
       color: row.querySelector(".org-color-input").value,
-      work: row.querySelector(".org-work-toggle").classList.contains("active"),
     });
   });
   return orgs;
@@ -357,6 +450,64 @@ function collectOrgConfig() {
 
 function closeSettings() {
   settingsModal.hidden = true;
+  settingsModal.onkeydown = null;
+  if (settingsPreviousFocus && settingsPreviousFocus.focus) {
+    settingsPreviousFocus.focus();
+  }
+}
+
+async function loadOrgColorPickers() {
+  var container = document.getElementById("org-color-list");
+  var orgColorOverrides = await getOrgColorOverrides();
+  var orgConfig = await getOrgConfig();
+  var orgLookup = getOrgLookup(orgConfig);
+
+  // Collect orgs from rendered cards, excluding ones already in the personal org list
+  var configuredOrgs = {};
+  for (var c = 0; c < orgConfig.length; c++) {
+    configuredOrgs[orgConfig[c].name.toLowerCase()] = true;
+  }
+
+  var orgs = [];
+  var seen = {};
+  document.querySelectorAll(".pr-card[data-org]").forEach(function (card) {
+    var org = card.dataset.org;
+    if (org && !seen[org] && !configuredOrgs[org]) {
+      seen[org] = true;
+      orgs.push(org);
+    }
+  });
+  orgs.sort();
+
+  if (orgs.length === 0) {
+    container.innerHTML = "";
+    return;
+  }
+
+  var html = '<p class="field-hint">' + escapeHtml(t("discoveredOrgsHint")) + '</p>';
+  for (var i = 0; i < orgs.length; i++) {
+    var current = getOrgColor(orgs[i], orgLookup, orgColorOverrides);
+    html += '<div class="org-row org-row-discovered">'
+      + '<span class="org-drag-handle" style="visibility:hidden">&#x2630;</span>'
+      + '<input type="text" class="org-name-input" value="' + escapeAttr(orgs[i]) + '" disabled>'
+      + '<input type="color" class="org-color-override" data-org="' + escapeAttr(orgs[i]) + '" value="' + escapeAttr(current.color) + '">'
+      + '<button type="button" class="org-promote-btn has-tooltip" data-tooltip="' + escapeAttr(t("tooltipPromoteOrg")) + '" data-org="' + escapeAttr(orgs[i]) + '" data-color="' + escapeAttr(current.color) + '">+</button>'
+      + '</div>';
+  }
+  container.innerHTML = html;
+
+  container.onclick = function (e) {
+    var btn = e.target.closest(".org-promote-btn");
+    if (!btn) return;
+    var orgName = btn.dataset.org;
+    var color = btn.dataset.color;
+    addOrgRow({ name: orgName, color: color }, "");
+    btn.closest(".org-row").remove();
+    // Hide section if no discovered orgs remain
+    if (!container.querySelector(".org-row")) {
+      container.innerHTML = "";
+    }
+  };
 }
 
 // --- Dashboard ---
@@ -373,9 +524,10 @@ async function loadDashboard(token) {
 
   var loadingStatus = document.getElementById("loading-status");
   columns.hidden = true;
+  document.getElementById("org-filters").hidden = true;
   loading.hidden = false;
   errorBanner.hidden = true;
-  loadingStatus.textContent = "Starting up...";
+  loadingStatus.textContent = t("loadingStarting");
 
   try {
     var orgConfig = await getOrgConfig();
@@ -383,7 +535,7 @@ async function loadDashboard(token) {
     var data = await fetchDashboardData(token, personalOrgNames, function (msg) {
       loadingStatus.textContent = msg;
     });
-    loadingStatus.textContent = "Rendering dashboard...";
+    loadingStatus.textContent = t("loadingRendering");
     await cacheData(data);
     await renderDashboard(data);
     columns.hidden = false;
@@ -400,19 +552,20 @@ async function renderDashboard(data) {
   var badge = document.getElementById("username-badge");
   badge.textContent = "@" + data.username;
   badge.hidden = false;
-  document.getElementById("last-updated").textContent = "Updated " + formatTime(new Date());
+  document.getElementById("last-updated").textContent = t("updatedAt", formatTime(new Date()));
 
   var username = data.username;
-  await setStored({ githubUsername: username });
+  await storageSet({ githubUsername: username });
   var orgConfig = await getOrgConfig();
 
   // Ensure the user's own account is always in the org config
   var hasOwn = orgConfig.some(function (o) { return o.name.toLowerCase() === username.toLowerCase(); });
   if (!hasOwn) {
-    orgConfig.push({ name: username, color: "#8b949e", work: false });
-    await setStored({ orgs: orgConfig });
+    orgConfig.push({ name: username, color: "#8b949e" });
+    await storageSet({ orgs: orgConfig });
   }
   var orgLookup = getOrgLookup(orgConfig);
+  var orgColorOverrides = await getOrgColorOverrides();
 
   // Score and sort each column: by org order first, then by urgency
   var reviewScored = scoreAndSort(data.reviewRequested || [], username, "review-requested", orgConfig);
@@ -425,9 +578,12 @@ async function renderDashboard(data) {
   var uniquePersonal = (data.personalPrs || []).filter(function (pr) { return !seen[pr.url]; });
   var personalScored = scoreAndSort(uniquePersonal, username, "personal", orgConfig);
 
-  renderColumn("review-requested", reviewScored, orgLookup);
-  renderColumn("authored", authoredScored, orgLookup);
-  renderColumn("personal", personalScored, orgLookup);
+  var allOrgs = collectOrgs(reviewScored.concat(authoredScored, personalScored));
+  renderOrgFilters(allOrgs, orgLookup, orgColorOverrides);
+
+  renderColumn("review-requested", reviewScored, orgLookup, orgColorOverrides);
+  renderColumn("authored", authoredScored, orgLookup, orgColorOverrides);
+  renderColumn("personal", personalScored, orgLookup, orgColorOverrides);
 
   var isEmpty = reviewScored.length === 0 && authoredScored.length === 0 && personalScored.length === 0;
   document.getElementById("empty-state").hidden = !isEmpty;
@@ -446,17 +602,18 @@ function scoreAndSort(prs, username, context, orgConfig) {
     var result = scorePr(prs[i], username, context);
     var owner = ((prs[i].repository && prs[i].repository.nameWithOwner) || "").split("/")[0].toLowerCase();
     var order = (owner in orgOrder) ? orgOrder[owner] : maxOrder;
-    scored.push({ pr: prs[i], score: result.score, reason: result.reason, context: context, orgOrder: order });
+    scored.push({ pr: prs[i], score: result.score, reason: result.reason, context: context, orgOrder: order, orgName: owner });
   }
-  // Sort by org order first, then by score descending within each org
+  // Sort by org order first, then alphabetically for unconfigured orgs, then by score
   scored.sort(function (a, b) {
     if (a.orgOrder !== b.orgOrder) return a.orgOrder - b.orgOrder;
+    if (a.orgOrder === maxOrder && a.orgName !== b.orgName) return a.orgName < b.orgName ? -1 : 1;
     return b.score - a.score;
   });
   return scored;
 }
 
-function renderColumn(id, items, orgLookup) {
+function renderColumn(id, items, orgLookup, orgColorOverrides) {
   var section = document.getElementById("section-" + id);
   var list = document.getElementById("list-" + id);
   var count = document.getElementById("count-" + id);
@@ -464,9 +621,32 @@ function renderColumn(id, items, orgLookup) {
   section.hidden = items.length === 0;
   count.textContent = items.length;
 
-  list.innerHTML = items.map(function (item) {
-    return renderScoredCard(item, orgLookup);
-  }).join("");
+  // Group by org — insert headers when the org changes
+  var html = "";
+  var lastOrg = null;
+  var hasMultipleOrgs = false;
+  for (var i = 0; i < items.length; i++) {
+    var org = (items[i].pr.repository?.nameWithOwner ?? "").split("/")[0].toLowerCase();
+    if (org !== lastOrg) {
+      if (lastOrg !== null) hasMultipleOrgs = true;
+      lastOrg = org;
+    }
+  }
+
+  lastOrg = null;
+  for (var j = 0; j < items.length; j++) {
+    var orgName = (items[j].pr.repository?.nameWithOwner ?? "").split("/")[0].toLowerCase();
+    if (hasMultipleOrgs && orgName !== lastOrg) {
+      var oc = getOrgColor(orgName, orgLookup, orgColorOverrides);
+      html += '<div class="org-group-header" data-org="' + escapeAttr(orgName) + '">'
+        + '<span class="org-group-dot" style="background:' + escapeAttr(oc.color) + '"></span>'
+        + escapeHtml(orgName)
+        + '</div>';
+      lastOrg = orgName;
+    }
+    html += renderScoredCard(items[j], orgLookup, orgColorOverrides);
+  }
+  list.innerHTML = html;
 }
 
 function severityLevel(score) {
@@ -475,7 +655,7 @@ function severityLevel(score) {
   return "low";
 }
 
-function renderScoredCard(item, orgLookup) {
+function renderScoredCard(item, orgLookup, orgColorOverrides) {
   var pr = item.pr;
   var repo = pr.repository?.nameWithOwner ?? "";
   var author = pr.author?.login ?? "unknown";
@@ -484,16 +664,16 @@ function renderScoredCard(item, orgLookup) {
   var severity = severityLevel(item.score);
 
   var statusClass = "review-required";
-  var statusText = "Review needed";
+  var statusText = t("statusReviewNeeded");
   if (pr.isDraft) {
     statusClass = "draft";
-    statusText = "Draft";
+    statusText = t("statusDraft");
   } else if (pr.reviewDecision === "APPROVED") {
     statusClass = "approved";
-    statusText = "Approved";
+    statusText = t("statusApproved");
   } else if (pr.reviewDecision === "CHANGES_REQUESTED") {
     statusClass = "changes-requested";
-    statusText = "Changes requested";
+    statusText = t("statusChangesRequested");
   }
 
   var orgName = repo.split("/")[0] || "";
@@ -504,16 +684,16 @@ function renderScoredCard(item, orgLookup) {
   // -- Tags row (top) --
   var tagsHtml = '<div class="pr-badges">';
   if (orgName) {
-    var orgConf = orgLookup[orgName.toLowerCase()];
-    var badgeStyle = orgConf ? ' style="background:' + escapeAttr(orgConf.color) + '22;color:' + escapeAttr(orgConf.color) + '"' : "";
-    tagsHtml += '<span class="org-badge"' + badgeStyle + '>' + escapeHtml(orgName) + '</span>';
+    var oc = getOrgColor(orgName, orgLookup, orgColorOverrides);
+    tagsHtml += '<span class="org-badge" style="background:' + escapeAttr(oc.bg) + ';color:' + escapeAttr(oc.color) + '">' + escapeHtml(orgName) + '</span>';
   }
   tagsHtml += '<span class="status-badge ' + escapeAttr(statusClass) + '">' + escapeHtml(statusText) + '</span>';
   tagsHtml += '</div>';
 
   // -- Card --
-  var html = '<div class="pr-card severity-' + severity + '">'
-    + '<div class="severity-bar"></div>'
+  var severityLabel = severity === "high" ? t("severityHigh") : severity === "medium" ? t("severityMedium") : t("severityLow");
+  var html = '<div class="pr-card severity-' + severity + '" data-org="' + escapeAttr(orgName.toLowerCase()) + '">'
+    + '<div class="severity-bar" aria-label="' + escapeAttr(severityLabel) + '"></div>'
     + '<div class="pr-card-inner">'
     +   tagsHtml
     +   '<div class="pr-body">'
@@ -544,6 +724,98 @@ function renderScoredCard(item, orgLookup) {
 }
 
 
+// --- Org filters ---
+
+function collectOrgs(scoredItems) {
+  var seen = {};
+  var orgs = [];
+  for (var i = 0; i < scoredItems.length; i++) {
+    var repo = scoredItems[i].pr.repository?.nameWithOwner ?? "";
+    var org = repo.split("/")[0].toLowerCase();
+    if (org && !seen[org]) {
+      seen[org] = true;
+      orgs.push(org);
+    }
+  }
+  orgs.sort();
+  return orgs;
+}
+
+function renderOrgFilters(orgs, orgLookup, orgColorOverrides) {
+  var container = document.getElementById("org-filters");
+  if (orgs.length <= 1) {
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+
+  var html = '<button class="org-filter-pill active" data-filter="all" aria-pressed="true">' + escapeHtml(t("filterAll")) + '</button>';
+  for (var i = 0; i < orgs.length; i++) {
+    var oc = getOrgColor(orgs[i], orgLookup, orgColorOverrides);
+    html += '<button class="org-filter-pill active" data-filter="' + escapeAttr(orgs[i]) + '" aria-pressed="true"'
+      + ' style="--pill-color:' + escapeAttr(oc.color) + ';--pill-bg:' + escapeAttr(oc.bg) + '">'
+      + escapeHtml(orgs[i]) + '</button>';
+  }
+  container.innerHTML = html;
+  container.hidden = false;
+
+  container.onclick = function (e) {
+    var pill = e.target.closest(".org-filter-pill");
+    if (!pill) return;
+
+    if (pill.dataset.filter === "all") {
+      container.querySelectorAll(".org-filter-pill").forEach(function (p) {
+        p.classList.add("active");
+        p.setAttribute("aria-pressed", "true");
+      });
+    } else {
+      pill.classList.toggle("active");
+      pill.setAttribute("aria-pressed", pill.classList.contains("active") ? "true" : "false");
+      // Update "All" pill state
+      var allPill = container.querySelector('[data-filter="all"]');
+      var orgPills = container.querySelectorAll('.org-filter-pill:not([data-filter="all"])');
+      var allActive = true;
+      orgPills.forEach(function (p) { if (!p.classList.contains("active")) allActive = false; });
+      allPill.classList.toggle("active", allActive);
+      allPill.setAttribute("aria-pressed", allActive ? "true" : "false");
+    }
+
+    applyOrgFilter();
+  };
+}
+
+function applyOrgFilter() {
+  var container = document.getElementById("org-filters");
+  var activePills = container.querySelectorAll('.org-filter-pill.active:not([data-filter="all"])');
+  var activeOrgs = {};
+  activePills.forEach(function (p) { activeOrgs[p.dataset.filter] = true; });
+  var hasFilter = Object.keys(activeOrgs).length > 0;
+
+  var cards = document.querySelectorAll(".pr-card");
+  cards.forEach(function (card) {
+    card.hidden = hasFilter ? !activeOrgs[card.dataset.org] : true;
+  });
+
+  // Hide/show org group headers based on filter
+  document.querySelectorAll(".org-group-header").forEach(function (header) {
+    header.hidden = hasFilter ? !activeOrgs[header.dataset.org] : true;
+  });
+
+  // Update counts and section visibility
+  ["review-requested", "authored", "personal"].forEach(function (id) {
+    var list = document.getElementById("list-" + id);
+    var section = document.getElementById("section-" + id);
+    var count = document.getElementById("count-" + id);
+    var visible = list.querySelectorAll(".pr-card:not([hidden])").length;
+    count.textContent = visible;
+    section.hidden = visible === 0;
+  });
+
+  // Update empty state
+  var totalVisible = document.querySelectorAll(".pr-card:not([hidden])").length;
+  document.getElementById("empty-state").hidden = totalVisible > 0;
+}
+
 // --- Cache ---
 
 function getCachedData() {
@@ -555,7 +827,7 @@ function getCachedData() {
 }
 
 function cacheData(data) {
-  return setStored({ dashboardCache: data, dashboardCacheTime: Date.now() });
+  return storageSet({ dashboardCache: data, dashboardCacheTime: Date.now() });
 }
 
 // --- Utilities ---
@@ -563,18 +835,18 @@ function cacheData(data) {
 function friendlyError(err) {
   var msg = err.message || "";
   if (msg.indexOf("502") !== -1 || msg.indexOf("503") !== -1 || msg.indexOf("504") !== -1) {
-    return "GitHub is having issues right now. Hit refresh to try again, or just open a new tab in a bit.";
+    return t("errorGitHub");
   }
   if (msg.indexOf("429") !== -1) {
-    return "GitHub rate limit hit. The dashboard will work again in a few minutes.";
+    return t("errorRateLimit");
   }
   if (msg.indexOf("401") !== -1) {
-    return "Your token seems invalid or expired. Try clearing it (logout button) and setting up a new one.";
+    return t("errorAuth");
   }
   if (msg.indexOf("Failed to fetch") !== -1 || msg.indexOf("NetworkError") !== -1) {
-    return "Can't reach GitHub. Check your internet connection and try again.";
+    return t("errorNetwork");
   }
-  return "Something went wrong loading your PRs. Hit refresh to try again.";
+  return t("errorGeneric");
 }
 
 function showError(el, message) {
@@ -584,15 +856,15 @@ function showError(el, message) {
 
 function timeAgo(dateStr) {
   var date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "unknown";
+  if (isNaN(date.getTime())) return t("timeUnknown");
   var seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return t("timeJustNow");
   var minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return minutes + "m ago";
+  if (minutes < 60) return t("timeMinAgo", minutes);
   var hours = Math.floor(minutes / 60);
-  if (hours < 24) return hours + "h ago";
+  if (hours < 24) return t("timeHourAgo", hours);
   var days = Math.floor(hours / 24);
-  return days + "d ago";
+  return t("timeDayAgo", days);
 }
 
 function formatTime(date) {
@@ -610,9 +882,12 @@ function isSafeUrl(url) {
 
 function escapeHtml(str) {
   if (typeof str !== "string") return "";
-  var div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function escapeAttr(str) {

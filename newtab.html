@@ -11,19 +11,54 @@
   <!-- Setup screen: shown when no token is stored -->
   <div id="setup-screen" class="screen" hidden>
     <div class="setup-card">
-      <h2>GitHub PR Dashboard</h2>
-      <p>Set up your GitHub token to get started.</p>
+      <h2 data-i18n="setupTitle">GitHub PR Dashboard</h2>
+      <p data-i18n="setupSubtitle">Replace your new tab with a live view of your pull requests.</p>
+
+      <div class="setup-features">
+        <div class="setup-feature">
+          <span class="setup-feature-icon">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </span>
+          <div>
+            <strong data-i18n="setupFeatureReviews">Review requests</strong>
+            <span class="setup-feature-desc" data-i18n="setupFeatureReviewsDesc">PRs waiting for your review, ranked by how long they've been waiting</span>
+          </div>
+        </div>
+        <div class="setup-feature">
+          <span class="setup-feature-icon">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+          </span>
+          <div>
+            <strong data-i18n="setupFeatureYourPrs">Your PRs</strong>
+            <span class="setup-feature-desc" data-i18n="setupFeatureYourPrsDesc">Unresponded feedback, changes requested, and stale PRs surfaced first</span>
+          </div>
+        </div>
+        <div class="setup-feature">
+          <span class="setup-feature-icon">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
+          <div>
+            <strong data-i18n="setupFeaturePersonal">Personal projects</strong>
+            <span class="setup-feature-desc" data-i18n="setupFeaturePersonalDesc">All open PRs across your repos and orgs in one place</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="setup-divider">
+
+      <h3 data-i18n="setupGetStarted">Get started</h3>
       <ol class="setup-steps">
         <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a fine-grained token</a> with <strong>Pull requests</strong> (read) access on all repositories</li>
-        <li>Paste it below</li>
+        <li data-i18n="setupTokenStep2">Paste it below</li>
       </ol>
       <p class="setup-alt">Or use a <a href="https://github.com/settings/tokens/new?description=GitHub%20PR%20Dashboard&scopes=repo" target="_blank" rel="noopener">classic token</a> with <code>repo</code> scope.</p>
-      <form id="setup-form">
-        <label for="setup-token">GitHub Token</label>
-        <input type="password" id="setup-token" placeholder="ghp_..." autocomplete="off" autofocus>
-        <button type="submit">Save</button>
+      <form id="setup-form" aria-label="GitHub token setup">
+        <label for="setup-token" data-i18n="setupTokenLabel">GitHub Token</label>
+        <input type="password" id="setup-token" data-i18n-placeholder="setupTokenPlaceholder" placeholder="ghp_..." autocomplete="off" autofocus>
+        <button type="submit" data-i18n="setupSave">Save</button>
       </form>
       <p id="setup-error" class="error" hidden></p>
+      <p class="setup-privacy" data-i18n="setupPrivacy">Your token stays on this device. It is never synced or sent anywhere except the GitHub API.</p>
     </div>
   </div>
 
@@ -31,26 +66,26 @@
   <div id="dashboard" class="screen screen-wide" hidden>
     <header>
       <div class="header-left">
-        <h1>GitHub PRs</h1>
+        <h1 data-i18n="dashboardTitle">GitHub PRs</h1>
         <span id="username-badge" class="badge" hidden></span>
       </div>
       <div class="header-right">
         <span id="last-updated" class="meta"></span>
-        <button id="refresh-btn" class="icon-btn" title="Refresh">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button id="refresh-btn" class="icon-btn has-tooltip" data-i18n-tooltip="tooltipRefresh" data-tooltip="Refresh" aria-label="Refresh" data-i18n-aria="tooltipRefresh">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="23 4 23 10 17 10"/>
             <polyline points="1 20 1 14 7 14"/>
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
           </svg>
         </button>
-        <button id="settings-btn" class="icon-btn" title="Settings">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button id="settings-btn" class="icon-btn has-tooltip" data-i18n-tooltip="tooltipSettings" data-tooltip="Settings" aria-label="Settings" data-i18n-aria="tooltipSettings">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
         </button>
-        <button id="logout-btn" class="icon-btn danger" title="Clear token &amp; logout">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button id="logout-btn" class="icon-btn danger has-tooltip" data-i18n-tooltip="tooltipLogout" data-tooltip="Clear token &amp; logout" aria-label="Clear token and logout" data-i18n-aria="tooltipLogout">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/>
             <line x1="21" y1="12" x2="9" y2="12"/>
@@ -61,17 +96,20 @@
 
     <div id="loading" hidden>
       <div class="spinner"></div>
-      <p id="loading-status"></p>
+      <p id="loading-status" role="status" aria-live="polite"></p>
     </div>
 
-    <div id="error-banner" class="error-banner" hidden></div>
+    <div id="error-banner" class="error-banner" role="alert" aria-live="assertive" hidden></div>
+
+    <div id="org-filters" class="org-filters" hidden></div>
 
     <div id="pr-columns" hidden>
       <!-- Review Requested -->
       <section id="section-review-requested" class="pr-column" hidden>
         <h2 class="column-title">
-          Review Requested
+          <span data-i18n="columnReviewRequested">Review Requested</span>
           <span class="count" id="count-review-requested"></span>
+          <span class="help-tip" data-i18n-tooltip="helpReviewRequested" data-tooltip="Open PRs where someone requested your review. Sorted by urgency — unstarted reviews and older PRs float to the top.">?</span>
         </h2>
         <div id="list-review-requested" class="pr-list"></div>
       </section>
@@ -79,8 +117,9 @@
       <!-- Your Open PRs -->
       <section id="section-authored" class="pr-column" hidden>
         <h2 class="column-title">
-          Your PRs
+          <span data-i18n="columnYourPrs">Your PRs</span>
           <span class="count" id="count-authored"></span>
+          <span class="help-tip" data-i18n-tooltip="helpYourPrs" data-tooltip="PRs you authored. Unresponded reviewer feedback and changes requested are surfaced first. Draft PRs are scored lower.">?</span>
         </h2>
         <div id="list-authored" class="pr-list"></div>
       </section>
@@ -88,59 +127,64 @@
       <!-- Personal Projects -->
       <section id="section-personal" class="pr-column" hidden>
         <h2 class="column-title">
-          Personal Projects
+          <span data-i18n="columnPersonal">Personal Projects</span>
           <span class="count" id="count-personal"></span>
+          <span class="help-tip" data-i18n-tooltip="helpPersonal" data-tooltip="All open PRs in your personal repos and any additional orgs you configured in settings. PRs already shown in the other columns are excluded.">?</span>
         </h2>
         <div id="list-personal" class="pr-list"></div>
       </section>
 
       <div id="empty-state" hidden>
-        <p class="empty-message">No open PRs. Go touch some grass.</p>
+        <p class="empty-message" data-i18n="emptyState">No open PRs. Go touch some grass.</p>
       </div>
     </div>
   </div>
 
   <!-- Settings modal -->
-  <div id="settings-modal" class="modal-overlay" hidden>
+  <div id="settings-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
     <div class="modal">
       <div class="modal-header">
-        <h2>Settings</h2>
-        <button id="settings-close" class="icon-btn" title="Close">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <h2 id="settings-title" data-i18n="settingsTitle">Settings</h2>
+        <button id="settings-close" class="icon-btn has-tooltip" data-i18n-tooltip="tooltipClose" data-tooltip="Close" aria-label="Close settings" data-i18n-aria="tooltipClose">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>
       <div class="modal-body">
-        <label>Organisations</label>
-        <p class="field-hint">Drag to reorder. Your username is always included at the end. PRs from unlisted orgs appear under your account.</p>
+        <label data-i18n="settingsOrgLabel">Personal organisations</label>
+        <p class="field-hint" data-i18n="settingsOrgHint">Add orgs to see all their open PRs and control their sort order. Drag to reorder — PRs are grouped by org in this order. Work orgs don't need to be here — your authored and review-requested PRs show up automatically. Orgs not in this list appear last, sorted alphabetically.</p>
         <div id="org-list" class="org-list"></div>
-        <button type="button" id="add-org-btn" class="btn-add">+ Add org</button>
+        <button type="button" id="add-org-btn" class="btn-add" data-i18n="settingsAddOrg">+ Add org</button>
 
-        <label>Theme</label>
+        <label data-i18n="settingsOrgColorsLabel">Org colours</label>
+        <p class="field-hint" data-i18n="settingsOrgColorsHint">Customise badge colours for orgs that appear on your dashboard.</p>
+        <div id="org-color-list"></div>
+
+        <label data-i18n="settingsThemeLabel">Theme</label>
         <div class="theme-picker" id="theme-picker">
           <button type="button" data-theme="system" class="theme-option active" title="System">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
             </svg>
-            System
+            <span data-i18n="themeSystem">System</span>
           </button>
           <button type="button" data-theme="light" class="theme-option" title="Light">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
             </svg>
-            Light
+            <span data-i18n="themeLight">Light</span>
           </button>
           <button type="button" data-theme="dark" class="theme-option" title="Dark">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
-            Dark
+            <span data-i18n="themeDark">Dark</span>
           </button>
         </div>
 
-        <button id="settings-save" class="btn-primary">Save</button>
+        <button id="settings-save" class="btn-primary" data-i18n="settingsSave">Save</button>
       </div>
     </div>
   </div>
