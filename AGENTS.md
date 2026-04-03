@@ -5,15 +5,17 @@ Chrome extension that replaces the new tab page with a GitHub PR dashboard showi
 ## Build Commands
 
 ```bash
+make test       # Run Vitest unit tests
 make lint       # Run ESLint
 make build      # Create distributable zip
+make ci         # Run lint + test + build (mirrors CI pipeline)
 make install    # Install dev dependencies
 ```
 
 ## Critical Rules
 
 - Pin dependencies to exact versions
-- Keep docs updated with every code change
+- Keep docs updated with every code change — this includes README.md, docs/store-listing.md (Chrome Web Store), and docs/architecture.md
 - Keep Makefile updated - add new tasks as project evolves
 - Token stored in `chrome.storage.local` (not `sync`) — never leaves the device
 - No external CDN dependencies — everything must work offline after install
@@ -22,8 +24,9 @@ make install    # Install dev dependencies
 
 | Topic | Guide |
 |-------|-------|
-| Architecture | [docs/architecture.md](docs/architecture.md) |
-| Security     | [docs/security.md](docs/security.md)         |
+| Architecture   | [docs/architecture.md](docs/architecture.md)   |
+| Security       | [docs/security.md](docs/security.md)           |
+| Store Listing  | [docs/store-listing.md](docs/store-listing.md) |
 
 ## Skill routing
 
