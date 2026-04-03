@@ -1,0 +1,287 @@
+{
+  "appName": {
+    "message": "GitHub PR Dashboard"
+  },
+  "appDescription": {
+    "message": "Pagina nuova scheda con le tue PR GitHub, revisioni e commenti non letti"
+  },
+  "setupTitle": {
+    "message": "GitHub PR Dashboard"
+  },
+  "setupSubtitle": {
+    "message": "Sostituisci la nuova scheda con una panoramica in tempo reale delle tue pull request."
+  },
+  "setupFeatureReviews": {
+    "message": "Richieste di revisione"
+  },
+  "setupFeatureReviewsDesc": {
+    "message": "PR in attesa della tua revisione, ordinate per tempo di attesa"
+  },
+  "setupFeatureYourPrs": {
+    "message": "Le tue PR"
+  },
+  "setupFeatureYourPrsDesc": {
+    "message": "Feedback senza risposta, modifiche richieste e PR inattive in primo piano"
+  },
+  "setupFeaturePersonal": {
+    "message": "Progetti personali"
+  },
+  "setupFeaturePersonalDesc": {
+    "message": "Tutte le PR aperte nei tuoi repo e organizzazioni in un unico posto"
+  },
+  "setupGetStarted": {
+    "message": "Per iniziare"
+  },
+  "setupTokenStep2": {
+    "message": "Incollalo qui sotto"
+  },
+  "setupTokenLabel": {
+    "message": "Token GitHub"
+  },
+  "setupTokenPlaceholder": {
+    "message": "ghp_..."
+  },
+  "setupSave": {
+    "message": "Salva"
+  },
+  "setupPrivacy": {
+    "message": "Il tuo token resta su questo dispositivo. Non viene mai sincronizzato o inviato altrove, solo alle API di GitHub."
+  },
+  "dashboardTitle": {
+    "message": "GitHub PR"
+  },
+  "tooltipRefresh": {
+    "message": "Aggiorna"
+  },
+  "tooltipSettings": {
+    "message": "Impostazioni"
+  },
+  "tooltipLogout": {
+    "message": "Cancella token e disconnetti"
+  },
+  "tooltipLogoutConfirm": {
+    "message": "Clicca di nuovo per confermare"
+  },
+  "columnReviewRequested": {
+    "message": "Revisioni richieste"
+  },
+  "columnYourPrs": {
+    "message": "Le tue PR"
+  },
+  "columnPersonal": {
+    "message": "Progetti personali"
+  },
+  "helpReviewRequested": {
+    "message": "PR aperte dove qualcuno ha richiesto la tua revisione. Ordinate per urgenza — le revisioni non iniziate e le PR meno recenti appaiono per prime."
+  },
+  "helpYourPrs": {
+    "message": "PR che hai creato. Feedback senza risposta e richieste di modifiche appaiono per primi. Le PR bozza hanno una priorit\u00e0 inferiore."
+  },
+  "helpPersonal": {
+    "message": "Tutte le PR aperte nei tuoi repo personali e nelle organizzazioni configurate nelle impostazioni. Le PR gi\u00e0 mostrate nelle altre colonne sono escluse."
+  },
+  "emptyState": {
+    "message": "Nessuna PR aperta. Vai a prendere una boccata d'aria."
+  },
+  "updatedAt": {
+    "message": "Aggiornato alle $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "14:30"
+      }
+    }
+  },
+  "filterAll": {
+    "message": "Tutte"
+  },
+  "settingsTitle": {
+    "message": "Impostazioni"
+  },
+  "tooltipClose": {
+    "message": "Chiudi"
+  },
+  "settingsOrgLabel": {
+    "message": "Organizzazioni personali"
+  },
+  "settingsOrgHint": {
+    "message": "Aggiungi organizzazioni per vedere tutte le loro PR aperte e controllarne l'ordine. Trascina per riordinare — le PR sono raggruppate per organizzazione in questo ordine. Le organizzazioni di lavoro non servono qui — le tue PR e le revisioni richieste appaiono automaticamente. Le organizzazioni non in questa lista appaiono per ultime, in ordine alfabetico."
+  },
+  "settingsAddOrg": {
+    "message": "+ Aggiungi org"
+  },
+  "settingsOrgColorsLabel": {
+    "message": "Colori organizzazioni"
+  },
+  "settingsOrgColorsHint": {
+    "message": "Personalizza i colori dei badge per le organizzazioni che appaiono nella tua dashboard."
+  },
+  "settingsThemeLabel": {
+    "message": "Tema"
+  },
+  "themeSystem": {
+    "message": "Sistema"
+  },
+  "themeLight": {
+    "message": "Chiaro"
+  },
+  "themeDark": {
+    "message": "Scuro"
+  },
+  "settingsSave": {
+    "message": "Salva"
+  },
+  "tooltipRemoveOrg": {
+    "message": "Rimuovi organizzazione"
+  },
+  "tooltipAccountLocked": {
+    "message": "Il tuo account non pu\u00f2 essere rimosso"
+  },
+  "tooltipPromoteOrg": {
+    "message": "Aggiungi alle organizzazioni personali"
+  },
+  "discoveredOrgsHint": {
+    "message": "Queste organizzazioni sono apparse dalle tue richieste di revisione e PR create."
+  },
+  "orgPlaceholder": {
+    "message": "nome-org"
+  },
+  "allOrgsConfigured": {
+    "message": ""
+  },
+  "loadingStarting": {
+    "message": "Avvio in corso..."
+  },
+  "loadingRendering": {
+    "message": "Rendering della dashboard..."
+  },
+  "tokenRequired": {
+    "message": "Il token \u00e8 obbligatorio"
+  },
+  "tokenInvalid": {
+    "message": "Token non valido — controlla il tuo PAT"
+  },
+  "setupFailed": {
+    "message": "Configurazione fallita. Controlla la console per i dettagli."
+  },
+  "errorGitHub": {
+    "message": "GitHub ha problemi in questo momento. Prova ad aggiornare, oppure apri una nuova scheda tra poco."
+  },
+  "errorRateLimit": {
+    "message": "Limite di richieste GitHub raggiunto. La dashboard torner\u00e0 a funzionare tra qualche minuto."
+  },
+  "errorAuth": {
+    "message": "Il tuo token sembra non valido o scaduto. Prova a cancellarlo (pulsante disconnetti) e configurarne uno nuovo."
+  },
+  "errorNetwork": {
+    "message": "Impossibile raggiungere GitHub. Controlla la connessione internet e riprova."
+  },
+  "errorGeneric": {
+    "message": "Qualcosa \u00e8 andato storto nel caricamento delle PR. Prova ad aggiornare."
+  },
+  "statusConnecting": {
+    "message": "Connessione a GitHub..."
+  },
+  "statusFetching": {
+    "message": "Recupero revisioni e PR per @$USER$...",
+    "placeholders": {
+      "user": {
+        "content": "$1",
+        "example": "octocat"
+      }
+    }
+  },
+  "statusScanning": {
+    "message": "Scansione progetti personali..."
+  },
+  "statusProcessing": {
+    "message": "Elaborazione dati..."
+  },
+  "reasonUnresponded": {
+    "message": "feedback senza risposta"
+  },
+  "reasonReviewPending": {
+    "message": "revisione in attesa"
+  },
+  "reasonDaysStale": {
+    "message": "$COUNT$g inattiva",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "reason1dStale": {
+    "message": "1g inattiva"
+  },
+  "reasonChangesRequested": {
+    "message": "modifiche richieste"
+  },
+  "reasonDraft": {
+    "message": "bozza"
+  },
+  "statusReviewNeeded": {
+    "message": "Revisione necessaria"
+  },
+  "statusDraft": {
+    "message": "Bozza"
+  },
+  "statusApproved": {
+    "message": "Approvata"
+  },
+  "statusChangesRequested": {
+    "message": "Modifiche richieste"
+  },
+  "timeJustNow": {
+    "message": "adesso"
+  },
+  "timeMinAgo": {
+    "message": "$COUNT$m fa",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "timeHourAgo": {
+    "message": "$COUNT$h fa",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "timeDayAgo": {
+    "message": "$COUNT$g fa",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "timeUnknown": {
+    "message": "sconosciuto"
+  },
+  "severityHigh": {
+    "message": "Urgenza alta"
+  },
+  "severityMedium": {
+    "message": "Urgenza media"
+  },
+  "severityLow": {
+    "message": "Urgenza bassa"
+  },
+  "dragHandle": {
+    "message": "Trascina per riordinare"
+  },
+  "moveUp": {
+    "message": "Sposta su"
+  },
+  "moveDown": {
+    "message": "Sposta gi\u00f9"
+  }
+}

@@ -1,0 +1,287 @@
+{
+  "appName": {
+    "message": "GitHub PR Dashboard"
+  },
+  "appDescription": {
+    "message": "New tab page showing your GitHub PRs, reviews, and unread comments"
+  },
+  "setupTitle": {
+    "message": "GitHub PR Dashboard"
+  },
+  "setupSubtitle": {
+    "message": "Replace your new tab with a live view of your pull requests."
+  },
+  "setupFeatureReviews": {
+    "message": "Review requests"
+  },
+  "setupFeatureReviewsDesc": {
+    "message": "PRs waiting for your review, ranked by how long they've been waiting"
+  },
+  "setupFeatureYourPrs": {
+    "message": "Your PRs"
+  },
+  "setupFeatureYourPrsDesc": {
+    "message": "Unresponded feedback, changes requested, and stale PRs surfaced first"
+  },
+  "setupFeaturePersonal": {
+    "message": "Personal projects"
+  },
+  "setupFeaturePersonalDesc": {
+    "message": "All open PRs across your repos and orgs in one place"
+  },
+  "setupGetStarted": {
+    "message": "Get started"
+  },
+  "setupTokenStep2": {
+    "message": "Paste it below"
+  },
+  "setupTokenLabel": {
+    "message": "GitHub Token"
+  },
+  "setupTokenPlaceholder": {
+    "message": "ghp_..."
+  },
+  "setupSave": {
+    "message": "Save"
+  },
+  "setupPrivacy": {
+    "message": "Your token stays on this device. It is never synced or sent anywhere except the GitHub API."
+  },
+  "dashboardTitle": {
+    "message": "GitHub PRs"
+  },
+  "tooltipRefresh": {
+    "message": "Refresh"
+  },
+  "tooltipSettings": {
+    "message": "Settings"
+  },
+  "tooltipLogout": {
+    "message": "Clear token & logout"
+  },
+  "tooltipLogoutConfirm": {
+    "message": "Click again to confirm"
+  },
+  "columnReviewRequested": {
+    "message": "Review Requested"
+  },
+  "columnYourPrs": {
+    "message": "Your PRs"
+  },
+  "columnPersonal": {
+    "message": "Personal Projects"
+  },
+  "helpReviewRequested": {
+    "message": "Open PRs where someone requested your review. Sorted by urgency — unstarted reviews and older PRs float to the top."
+  },
+  "helpYourPrs": {
+    "message": "PRs you authored. Unresponded reviewer feedback and changes requested are surfaced first. Draft PRs are scored lower."
+  },
+  "helpPersonal": {
+    "message": "All open PRs in your personal repos and any additional orgs you configured in settings. PRs already shown in the other columns are excluded."
+  },
+  "emptyState": {
+    "message": "No open PRs. Go touch some grass."
+  },
+  "updatedAt": {
+    "message": "Updated $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "14:30"
+      }
+    }
+  },
+  "filterAll": {
+    "message": "All"
+  },
+  "settingsTitle": {
+    "message": "Settings"
+  },
+  "tooltipClose": {
+    "message": "Close"
+  },
+  "settingsOrgLabel": {
+    "message": "Personal organisations"
+  },
+  "settingsOrgHint": {
+    "message": "Add orgs to see all their open PRs and control their sort order. Drag to reorder — PRs are grouped by org in this order. Work orgs don't need to be here — your authored and review-requested PRs show up automatically. Orgs not in this list appear last, sorted alphabetically."
+  },
+  "settingsAddOrg": {
+    "message": "+ Add org"
+  },
+  "settingsOrgColorsLabel": {
+    "message": "Org colours"
+  },
+  "settingsOrgColorsHint": {
+    "message": "Customise badge colours for orgs that appear on your dashboard."
+  },
+  "settingsThemeLabel": {
+    "message": "Theme"
+  },
+  "themeSystem": {
+    "message": "System"
+  },
+  "themeLight": {
+    "message": "Light"
+  },
+  "themeDark": {
+    "message": "Dark"
+  },
+  "settingsSave": {
+    "message": "Save"
+  },
+  "tooltipRemoveOrg": {
+    "message": "Remove org"
+  },
+  "tooltipAccountLocked": {
+    "message": "Your account can\u2019t be removed"
+  },
+  "tooltipPromoteOrg": {
+    "message": "Add to personal orgs"
+  },
+  "discoveredOrgsHint": {
+    "message": "These orgs appeared from your review requests and authored PRs."
+  },
+  "orgPlaceholder": {
+    "message": "org-name"
+  },
+  "allOrgsConfigured": {
+    "message": ""
+  },
+  "loadingStarting": {
+    "message": "Starting up..."
+  },
+  "loadingRendering": {
+    "message": "Rendering dashboard..."
+  },
+  "tokenRequired": {
+    "message": "Token is required"
+  },
+  "tokenInvalid": {
+    "message": "Invalid token — check your PAT"
+  },
+  "setupFailed": {
+    "message": "Setup failed. Check the console for details."
+  },
+  "errorGitHub": {
+    "message": "GitHub is having issues right now. Hit refresh to try again, or just open a new tab in a bit."
+  },
+  "errorRateLimit": {
+    "message": "GitHub rate limit hit. The dashboard will work again in a few minutes."
+  },
+  "errorAuth": {
+    "message": "Your token seems invalid or expired. Try clearing it (logout button) and setting up a new one."
+  },
+  "errorNetwork": {
+    "message": "Can\u2019t reach GitHub. Check your internet connection and try again."
+  },
+  "errorGeneric": {
+    "message": "Something went wrong loading your PRs. Hit refresh to try again."
+  },
+  "statusConnecting": {
+    "message": "Connecting to GitHub..."
+  },
+  "statusFetching": {
+    "message": "Fetching reviews & PRs for @$USER$...",
+    "placeholders": {
+      "user": {
+        "content": "$1",
+        "example": "octocat"
+      }
+    }
+  },
+  "statusScanning": {
+    "message": "Scanning personal projects..."
+  },
+  "statusProcessing": {
+    "message": "Crunching the numbers..."
+  },
+  "reasonUnresponded": {
+    "message": "unresponded feedback"
+  },
+  "reasonReviewPending": {
+    "message": "review pending"
+  },
+  "reasonDaysStale": {
+    "message": "$COUNT$d stale",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "reason1dStale": {
+    "message": "1d stale"
+  },
+  "reasonChangesRequested": {
+    "message": "changes requested"
+  },
+  "reasonDraft": {
+    "message": "draft"
+  },
+  "statusReviewNeeded": {
+    "message": "Review needed"
+  },
+  "statusDraft": {
+    "message": "Draft"
+  },
+  "statusApproved": {
+    "message": "Approved"
+  },
+  "statusChangesRequested": {
+    "message": "Changes requested"
+  },
+  "timeJustNow": {
+    "message": "just now"
+  },
+  "timeMinAgo": {
+    "message": "$COUNT$m ago",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "timeHourAgo": {
+    "message": "$COUNT$h ago",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "timeDayAgo": {
+    "message": "$COUNT$d ago",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "timeUnknown": {
+    "message": "unknown"
+  },
+  "severityHigh": {
+    "message": "High urgency"
+  },
+  "severityMedium": {
+    "message": "Medium urgency"
+  },
+  "severityLow": {
+    "message": "Low urgency"
+  },
+  "dragHandle": {
+    "message": "Drag to reorder"
+  },
+  "moveUp": {
+    "message": "Move up"
+  },
+  "moveDown": {
+    "message": "Move down"
+  }
+}

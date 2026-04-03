@@ -1,0 +1,287 @@
+{
+  "appName": {
+    "message": "GitHub PR Dashboard"
+  },
+  "appDescription": {
+    "message": "Nowa karta z przegl\u0105dem Twoich PR na GitHubie, recenzji i nieprzeczytanych komentarzy"
+  },
+  "setupTitle": {
+    "message": "GitHub PR Dashboard"
+  },
+  "setupSubtitle": {
+    "message": "Zast\u0105p now\u0105 kart\u0119 podgl\u0105dem swoich pull request\u00f3w na \u017cywo."
+  },
+  "setupFeatureReviews": {
+    "message": "Pro\u015bby o przegl\u0105d"
+  },
+  "setupFeatureReviewsDesc": {
+    "message": "PR czekaj\u0105ce na Twoj\u0105 recenzj\u0119, posortowane wed\u0142ug czasu oczekiwania"
+  },
+  "setupFeatureYourPrs": {
+    "message": "Twoje PR"
+  },
+  "setupFeatureYourPrsDesc": {
+    "message": "Nieodpowiedziane komentarze, wymagane zmiany i nieaktywne PR wy\u015bwietlane na pocz\u0105tku"
+  },
+  "setupFeaturePersonal": {
+    "message": "Projekty osobiste"
+  },
+  "setupFeaturePersonalDesc": {
+    "message": "Wszystkie otwarte PR z Twoich repozytori\u00f3w i organizacji w jednym miejscu"
+  },
+  "setupGetStarted": {
+    "message": "Rozpocznij"
+  },
+  "setupTokenStep2": {
+    "message": "Wklej go poni\u017cej"
+  },
+  "setupTokenLabel": {
+    "message": "Token GitHub"
+  },
+  "setupTokenPlaceholder": {
+    "message": "ghp_..."
+  },
+  "setupSave": {
+    "message": "Zapisz"
+  },
+  "setupPrivacy": {
+    "message": "Tw\u00f3j token pozostaje na tym urz\u0105dzeniu. Nigdy nie jest synchronizowany ani wysy\u0142any nigdzie poza API GitHuba."
+  },
+  "dashboardTitle": {
+    "message": "GitHub PR"
+  },
+  "tooltipRefresh": {
+    "message": "Od\u015bwie\u017c"
+  },
+  "tooltipSettings": {
+    "message": "Ustawienia"
+  },
+  "tooltipLogout": {
+    "message": "Usu\u0144 token i wyloguj"
+  },
+  "tooltipLogoutConfirm": {
+    "message": "Kliknij ponownie, aby potwierdzi\u0107"
+  },
+  "columnReviewRequested": {
+    "message": "Pro\u015bby o przegl\u0105d"
+  },
+  "columnYourPrs": {
+    "message": "Twoje PR"
+  },
+  "columnPersonal": {
+    "message": "Projekty osobiste"
+  },
+  "helpReviewRequested": {
+    "message": "Otwarte PR, w kt\u00f3rych kto\u015b poprosi\u0142 o Twoj\u0105 recenzj\u0119. Posortowane wed\u0142ug pilno\u015bci \u2014 nierozpocz\u0119te recenzje i starsze PR s\u0105 na g\u00f3rze."
+  },
+  "helpYourPrs": {
+    "message": "PR, kt\u00f3re utworzy\u0142e\u015b. Nieodpowiedziane komentarze i wymagane zmiany s\u0105 wy\u015bwietlane pierwsze. PR w wersji roboczej maj\u0105 ni\u017cszy priorytet."
+  },
+  "helpPersonal": {
+    "message": "Wszystkie otwarte PR w Twoich osobistych repozytoriach i organizacjach skonfigurowanych w ustawieniach. PR ju\u017c widoczne w innych kolumnach s\u0105 wykluczone."
+  },
+  "emptyState": {
+    "message": "Brak otwartych PR. Id\u017a na spacer."
+  },
+  "updatedAt": {
+    "message": "Zaktualizowano $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "14:30"
+      }
+    }
+  },
+  "filterAll": {
+    "message": "Wszystkie"
+  },
+  "settingsTitle": {
+    "message": "Ustawienia"
+  },
+  "tooltipClose": {
+    "message": "Zamknij"
+  },
+  "settingsOrgLabel": {
+    "message": "Organizacje osobiste"
+  },
+  "settingsOrgHint": {
+    "message": "Dodaj organizacje, aby zobaczy\u0107 ich otwarte PR i kontrolowa\u0107 kolejno\u015b\u0107 sortowania. Przeci\u0105gnij, aby zmieni\u0107 kolejno\u015b\u0107 \u2014 PR s\u0105 grupowane wed\u0142ug organizacji w tej kolejno\u015bci. Organizacje firmowe nie musz\u0105 tu by\u0107 \u2014 Twoje PR i pro\u015bby o recenzj\u0119 pojawiaj\u0105 si\u0119 automatycznie. Organizacje spoza tej listy pojawiaj\u0105 si\u0119 na ko\u0144cu, posortowane alfabetycznie."
+  },
+  "settingsAddOrg": {
+    "message": "+ Dodaj org"
+  },
+  "settingsOrgColorsLabel": {
+    "message": "Kolory organizacji"
+  },
+  "settingsOrgColorsHint": {
+    "message": "Dostosuj kolory badge\u2019\u00f3w dla organizacji widocznych na Twoim dashboardzie."
+  },
+  "settingsThemeLabel": {
+    "message": "Motyw"
+  },
+  "themeSystem": {
+    "message": "Systemowy"
+  },
+  "themeLight": {
+    "message": "Jasny"
+  },
+  "themeDark": {
+    "message": "Ciemny"
+  },
+  "settingsSave": {
+    "message": "Zapisz"
+  },
+  "tooltipRemoveOrg": {
+    "message": "Usu\u0144 organizacj\u0119"
+  },
+  "tooltipAccountLocked": {
+    "message": "Twoje konto nie mo\u017ce zosta\u0107 usuni\u0119te"
+  },
+  "tooltipPromoteOrg": {
+    "message": "Dodaj do organizacji osobistych"
+  },
+  "discoveredOrgsHint": {
+    "message": "Te organizacje pojawi\u0142y si\u0119 z Twoich pr\u00f3\u015bb o recenzj\u0119 i utworzonych PR."
+  },
+  "orgPlaceholder": {
+    "message": "nazwa-org"
+  },
+  "allOrgsConfigured": {
+    "message": ""
+  },
+  "loadingStarting": {
+    "message": "Uruchamianie..."
+  },
+  "loadingRendering": {
+    "message": "Renderowanie dashboardu..."
+  },
+  "tokenRequired": {
+    "message": "Token jest wymagany"
+  },
+  "tokenInvalid": {
+    "message": "Nieprawid\u0142owy token \u2014 sprawd\u017a sw\u00f3j PAT"
+  },
+  "setupFailed": {
+    "message": "Konfiguracja nie powiod\u0142a si\u0119. Sprawd\u017a konsol\u0119."
+  },
+  "errorGitHub": {
+    "message": "GitHub ma teraz problemy. Spr\u00f3buj od\u015bwie\u017cy\u0107 lub otw\u00f3rz now\u0105 kart\u0119 za chwil\u0119."
+  },
+  "errorRateLimit": {
+    "message": "Osi\u0105gni\u0119to limit zapyta\u0144 GitHub. Dashboard b\u0119dzie dzia\u0142a\u0107 ponownie za kilka minut."
+  },
+  "errorAuth": {
+    "message": "Tw\u00f3j token wygl\u0105da na nieprawid\u0142owy lub wygas\u0142y. Spr\u00f3buj go usun\u0105\u0107 (przycisk wyloguj) i skonfigurowa\u0107 nowy."
+  },
+  "errorNetwork": {
+    "message": "Nie mo\u017cna po\u0142\u0105czy\u0107 si\u0119 z GitHubem. Sprawd\u017a po\u0142\u0105czenie internetowe i spr\u00f3buj ponownie."
+  },
+  "errorGeneric": {
+    "message": "Co\u015b posz\u0142o nie tak podczas \u0142adowania PR. Spr\u00f3buj od\u015bwie\u017cy\u0107."
+  },
+  "statusConnecting": {
+    "message": "\u0141\u0105czenie z GitHubem..."
+  },
+  "statusFetching": {
+    "message": "Pobieranie recenzji i PR dla @$USER$...",
+    "placeholders": {
+      "user": {
+        "content": "$1",
+        "example": "octocat"
+      }
+    }
+  },
+  "statusScanning": {
+    "message": "Skanowanie projekt\u00f3w osobistych..."
+  },
+  "statusProcessing": {
+    "message": "Przetwarzanie danych..."
+  },
+  "reasonUnresponded": {
+    "message": "nieodpowiedziane komentarze"
+  },
+  "reasonReviewPending": {
+    "message": "oczekuje na recenzj\u0119"
+  },
+  "reasonDaysStale": {
+    "message": "$COUNT$d nieaktywna",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "reason1dStale": {
+    "message": "1d nieaktywna"
+  },
+  "reasonChangesRequested": {
+    "message": "wymagane zmiany"
+  },
+  "reasonDraft": {
+    "message": "wersja robocza"
+  },
+  "statusReviewNeeded": {
+    "message": "Wymagana recenzja"
+  },
+  "statusDraft": {
+    "message": "Wersja robocza"
+  },
+  "statusApproved": {
+    "message": "Zatwierdzona"
+  },
+  "statusChangesRequested": {
+    "message": "Wymagane zmiany"
+  },
+  "timeJustNow": {
+    "message": "przed chwil\u0105"
+  },
+  "timeMinAgo": {
+    "message": "$COUNT$m temu",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "timeHourAgo": {
+    "message": "$COUNT$h temu",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "timeDayAgo": {
+    "message": "$COUNT$d temu",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "timeUnknown": {
+    "message": "nieznany"
+  },
+  "severityHigh": {
+    "message": "Wysoka pilno\u015b\u0107"
+  },
+  "severityMedium": {
+    "message": "\u015arednia pilno\u015b\u0107"
+  },
+  "severityLow": {
+    "message": "Niska pilno\u015b\u0107"
+  },
+  "dragHandle": {
+    "message": "Przeci\u0105gnij, aby zmieni\u0107 kolejno\u015b\u0107"
+  },
+  "moveUp": {
+    "message": "Przesu\u0144 w g\u00f3r\u0119"
+  },
+  "moveDown": {
+    "message": "Przesu\u0144 w d\u00f3\u0142"
+  }
+}
