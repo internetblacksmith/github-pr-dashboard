@@ -92,22 +92,19 @@ describe("isSafeUrl", function () {
   });
 });
 
-describe("parseOrgList", function () {
-  it("splits comma-separated orgs", function () {
-    expect(mod.parseOrgList("foo, bar, baz")).toEqual(["foo", "bar", "baz"]);
+describe("getOrgLookup", function () {
+  it("creates a lookup from org config array", function () {
+    var lookup = mod.getOrgLookup([
+      { name: "MyOrg", color: "#ff0000", work: true },
+      { name: "other", color: "#00ff00", work: false },
+    ]);
+    expect(lookup["myorg"].color).toBe("#ff0000");
+    expect(lookup["myorg"].work).toBe(true);
+    expect(lookup["other"].color).toBe("#00ff00");
   });
 
-  it("lowercases and trims", function () {
-    expect(mod.parseOrgList(" MyOrg , OtherOrg ")).toEqual(["myorg", "otherorg"]);
-  });
-
-  it("filters invalid org names", function () {
-    expect(mod.parseOrgList("valid-org, in valid, --bad")).toEqual(["valid-org"]);
-  });
-
-  it("returns empty array for null/empty input", function () {
-    expect(mod.parseOrgList(null)).toEqual([]);
-    expect(mod.parseOrgList("")).toEqual([]);
+  it("returns empty object for empty array", function () {
+    expect(mod.getOrgLookup([])).toEqual({});
   });
 });
 

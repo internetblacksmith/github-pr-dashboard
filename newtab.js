@@ -97,14 +97,24 @@ function removeStored(keys) {
   return storageRemove(keys);
 }
 
-var ORG_NAME_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+var DEFAULT_COLORS = ["#58a6ff", "#bc8cff", "#3fb950", "#d29922", "#f85149", "#8b949e"];
 
-function parseOrgList(raw) {
-  if (!raw) return [];
-  return raw
-    .split(",")
-    .map(function (s) { return s.trim().toLowerCase(); })
-    .filter(function (s) { return s && ORG_NAME_RE.test(s); });
+async function getOrgConfig() {
+  var raw = await getStored("orgs");
+  if (!raw || !Array.isArray(raw)) return [];
+  return raw;
+}
+
+function getOrgLookup(orgConfig) {
+  var lookup = {};
+  for (var i = 0; i < orgConfig.length; i++) {
+    lookup[orgConfig[i].name.toLowerCase()] = orgConfig[i];
+  }
+  return lookup;
+}
+
+function getPersonalOrgNames(orgConfig) {
+  return orgConfig.map(function (o) { return o.name.toLowerCase(); });
 }
 
 // --- Theme ---
@@ -140,13 +150,6 @@ async function loadThemePicker() {
   });
 }
 
-async function getWorkOrgs() {
-  return parseOrgList(await getStored("workOrgs"));
-}
-
-async function getPersonalOrgs() {
-  return parseOrgList(await getStored("personalOrgs"));
-}
 
 // --- Setup form ---
 
@@ -167,8 +170,8 @@ function setupSetupForm() {
     }
 
     try {
-      await fetchUsername(token);
-      await setStored({ githubToken: token });
+      var username = await fetchUsername(token);
+      await setStored({ githubToken: token, githubUsername: username });
 
       showScreen(dashboard);
       setupHeaderButtons(token);
@@ -202,12 +205,15 @@ function setupHeaderButtons(token) {
   });
   setupThemePicker();
 
+  document.getElementById("add-org-btn").onclick = function () {
+    addOrgRow({ name: "", color: DEFAULT_COLORS[document.querySelectorAll(".org-row").length % DEFAULT_COLORS.length], work: false }, "");
+  };
+
   document.getElementById("settings-save").onclick = async function () {
-    var workInput = document.getElementById("work-orgs-input").value.trim();
-    var personalInput = document.getElementById("personal-orgs-input").value.trim();
+    var orgs = collectOrgConfig();
     var activeTheme = document.querySelector(".theme-option.active");
     var theme = activeTheme ? activeTheme.dataset.theme : "system";
-    await setStored({ workOrgs: workInput, personalOrgs: personalInput, theme: theme });
+    await setStored({ orgs: orgs, theme: theme });
     closeSettings();
     await removeStored(["dashboardCache", "dashboardCacheTime"]);
     await loadDashboard(token);
@@ -228,17 +234,125 @@ function setupHeaderButtons(token) {
       }, 3000);
       return;
     }
-    await removeStored(["githubToken", "workOrgs", "personalOrgs", "theme", "dashboardCache", "dashboardCacheTime"]);
+    await removeStored(["githubToken", "githubUsername", "orgs", "theme", "dashboardCache", "dashboardCacheTime"]);
     showScreen(setupScreen);
     setupSetupForm();
   };
 }
 
 async function openSettings() {
-  document.getElementById("work-orgs-input").value = (await getStored("workOrgs")) ?? "";
-  document.getElementById("personal-orgs-input").value = (await getStored("personalOrgs")) ?? "";
+  var orgConfig = await getOrgConfig();
+  var username = (await getStored("githubUsername")) || "";
+
+  // Ensure the user's own account is in the list
+  if (username) {
+    var hasOwn = orgConfig.some(function (o) { return o.name.toLowerCase() === username.toLowerCase(); });
+    if (!hasOwn) {
+      orgConfig.push({ name: username, color: "#8b949e", work: false, isUser: true });
+    } else {
+      // Mark the existing entry so we know not to allow deletion
+      for (var i = 0; i < orgConfig.length; i++) {
+        if (orgConfig[i].name.toLowerCase() === username.toLowerCase()) {
+          orgConfig[i].isUser = true;
+        }
+      }
+    }
+  }
+
+  renderOrgList(orgConfig, username);
   await loadThemePicker();
   settingsModal.hidden = false;
+}
+
+function renderOrgList(orgs, username) {
+  var list = document.getElementById("org-list");
+  list.innerHTML = "";
+  for (var i = 0; i < orgs.length; i++) {
+    addOrgRow(orgs[i], username);
+  }
+}
+
+function addOrgRow(org, username) {
+  var locked = org.isUser || (username && org.name.toLowerCase() === (username || "").toLowerCase());
+  var list = document.getElementById("org-list");
+  var row = document.createElement("div");
+  row.className = "org-row" + (locked ? " org-row-locked" : "");
+  row.draggable = true;
+
+  row.innerHTML = '<span class="org-drag-handle">&#x2630;</span>'
+    + (locked
+      ? '<span class="org-name-label">' + escapeHtml(org.name) + '</span>'
+      : '<input type="text" class="org-name-input" value="' + escapeAttr(org.name) + '" placeholder="org-name">')
+    + '<input type="color" class="org-color-input" value="' + escapeAttr(org.color || "#8b949e") + '">'
+    + '<button type="button" class="org-work-toggle ' + (org.work ? "active" : "") + '">work</button>'
+    + (locked ? '' : '<button type="button" class="org-delete-btn">&times;</button>');
+
+  if (locked) {
+    // Store the name in a hidden input so collectOrgConfig picks it up
+    var hidden = document.createElement("input");
+    hidden.type = "hidden";
+    hidden.className = "org-name-input";
+    hidden.value = org.name;
+    row.appendChild(hidden);
+  }
+
+  row.querySelector(".org-work-toggle").onclick = function () {
+    this.classList.toggle("active");
+  };
+
+  var deleteBtn = row.querySelector(".org-delete-btn");
+  if (deleteBtn) {
+    deleteBtn.onclick = function () { row.remove(); };
+  }
+
+  // Drag and drop reordering
+  row.addEventListener("dragstart", function (e) {
+    row.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+  });
+
+  row.addEventListener("dragend", function () {
+    row.classList.remove("dragging");
+    list.querySelectorAll(".org-row").forEach(function (r) { r.classList.remove("drag-over"); });
+  });
+
+  row.addEventListener("dragover", function (e) {
+    e.preventDefault();
+    var dragging = list.querySelector(".dragging");
+    if (dragging && dragging !== row) {
+      row.classList.add("drag-over");
+      var rect = row.getBoundingClientRect();
+      var midY = rect.top + rect.height / 2;
+      if (e.clientY < midY) {
+        list.insertBefore(dragging, row);
+      } else {
+        list.insertBefore(dragging, row.nextSibling);
+      }
+    }
+  });
+
+  row.addEventListener("dragleave", function () {
+    row.classList.remove("drag-over");
+  });
+
+  list.appendChild(row);
+}
+
+function collectOrgConfig() {
+  var list = document.getElementById("org-list");
+  var rows = list.querySelectorAll(".org-row");
+  var orgs = [];
+  rows.forEach(function (row) {
+    var nameInput = row.querySelector(".org-name-input");
+    var name = nameInput ? nameInput.value.trim().toLowerCase() : "";
+    if (!name) return;
+    orgs.push({
+      name: name,
+      color: row.querySelector(".org-color-input").value,
+      work: row.querySelector(".org-work-toggle").classList.contains("active"),
+    });
+  });
+  return orgs;
 }
 
 function closeSettings() {
@@ -264,8 +378,9 @@ async function loadDashboard(token) {
   loadingStatus.textContent = "Starting up...";
 
   try {
-    var personalOrgs = await getPersonalOrgs();
-    var data = await fetchDashboardData(token, personalOrgs, function (msg) {
+    var orgConfig = await getOrgConfig();
+    var personalOrgNames = getPersonalOrgNames(orgConfig);
+    var data = await fetchDashboardData(token, personalOrgNames, function (msg) {
       loadingStatus.textContent = msg;
     });
     loadingStatus.textContent = "Rendering dashboard...";
@@ -288,39 +403,60 @@ async function renderDashboard(data) {
   document.getElementById("last-updated").textContent = "Updated " + formatTime(new Date());
 
   var username = data.username;
+  await setStored({ githubUsername: username });
+  var orgConfig = await getOrgConfig();
 
-  // Score and sort each column independently
-  var reviewScored = scoreAndSort(data.reviewRequested || [], username, "review-requested");
-  var authoredScored = scoreAndSort(data.authored || [], username, "authored");
+  // Ensure the user's own account is always in the org config
+  var hasOwn = orgConfig.some(function (o) { return o.name.toLowerCase() === username.toLowerCase(); });
+  if (!hasOwn) {
+    orgConfig.push({ name: username, color: "#8b949e", work: false });
+    await setStored({ orgs: orgConfig });
+  }
+  var orgLookup = getOrgLookup(orgConfig);
+
+  // Score and sort each column: by org order first, then by urgency
+  var reviewScored = scoreAndSort(data.reviewRequested || [], username, "review-requested", orgConfig);
+  var authoredScored = scoreAndSort(data.authored || [], username, "authored", orgConfig);
 
   // Personal PRs: deduplicate against authored and review-requested
   var seen = {};
   (data.authored || []).forEach(function (pr) { seen[pr.url] = true; });
   (data.reviewRequested || []).forEach(function (pr) { seen[pr.url] = true; });
   var uniquePersonal = (data.personalPrs || []).filter(function (pr) { return !seen[pr.url]; });
-  var personalScored = scoreAndSort(uniquePersonal, username, "personal");
+  var personalScored = scoreAndSort(uniquePersonal, username, "personal", orgConfig);
 
-  var workOrgs = await getWorkOrgs();
-
-  renderColumn("review-requested", reviewScored, workOrgs);
-  renderColumn("authored", authoredScored, workOrgs);
-  renderColumn("personal", personalScored, workOrgs);
+  renderColumn("review-requested", reviewScored, orgLookup);
+  renderColumn("authored", authoredScored, orgLookup);
+  renderColumn("personal", personalScored, orgLookup);
 
   var isEmpty = reviewScored.length === 0 && authoredScored.length === 0 && personalScored.length === 0;
   document.getElementById("empty-state").hidden = !isEmpty;
 }
 
-function scoreAndSort(prs, username, context) {
+function scoreAndSort(prs, username, context, orgConfig) {
+  // Build org order lookup: configured orgs get their index, unknown orgs go last
+  var orgOrder = {};
+  for (var o = 0; o < orgConfig.length; o++) {
+    orgOrder[orgConfig[o].name.toLowerCase()] = o;
+  }
+  var maxOrder = orgConfig.length;
+
   var scored = [];
   for (var i = 0; i < prs.length; i++) {
     var result = scorePr(prs[i], username, context);
-    scored.push({ pr: prs[i], score: result.score, reason: result.reason, context: context });
+    var owner = ((prs[i].repository && prs[i].repository.nameWithOwner) || "").split("/")[0].toLowerCase();
+    var order = (owner in orgOrder) ? orgOrder[owner] : maxOrder;
+    scored.push({ pr: prs[i], score: result.score, reason: result.reason, context: context, orgOrder: order });
   }
-  scored.sort(function (a, b) { return b.score - a.score; });
+  // Sort by org order first, then by score descending within each org
+  scored.sort(function (a, b) {
+    if (a.orgOrder !== b.orgOrder) return a.orgOrder - b.orgOrder;
+    return b.score - a.score;
+  });
   return scored;
 }
 
-function renderColumn(id, items, workOrgs) {
+function renderColumn(id, items, orgLookup) {
   var section = document.getElementById("section-" + id);
   var list = document.getElementById("list-" + id);
   var count = document.getElementById("count-" + id);
@@ -329,7 +465,7 @@ function renderColumn(id, items, workOrgs) {
   count.textContent = items.length;
 
   list.innerHTML = items.map(function (item) {
-    return renderScoredCard(item, workOrgs);
+    return renderScoredCard(item, orgLookup);
   }).join("");
 }
 
@@ -339,7 +475,7 @@ function severityLevel(score) {
   return "low";
 }
 
-function renderScoredCard(item, workOrgs) {
+function renderScoredCard(item, orgLookup) {
   var pr = item.pr;
   var repo = pr.repository?.nameWithOwner ?? "";
   var author = pr.author?.login ?? "unknown";
@@ -368,8 +504,9 @@ function renderScoredCard(item, workOrgs) {
   // -- Tags row (top) --
   var tagsHtml = '<div class="pr-badges">';
   if (orgName) {
-    var isWork = workOrgs.length > 0 && workOrgs.indexOf(orgName.toLowerCase()) !== -1;
-    tagsHtml += '<span class="org-badge ' + (isWork ? "org-work" : "org-personal") + '">' + escapeHtml(orgName) + '</span>';
+    var orgConf = orgLookup[orgName.toLowerCase()];
+    var badgeStyle = orgConf ? ' style="background:' + escapeAttr(orgConf.color) + '22;color:' + escapeAttr(orgConf.color) + '"' : "";
+    tagsHtml += '<span class="org-badge"' + badgeStyle + '>' + escapeHtml(orgName) + '</span>';
   }
   tagsHtml += '<span class="status-badge ' + escapeAttr(statusClass) + '">' + escapeHtml(statusText) + '</span>';
   tagsHtml += '</div>';

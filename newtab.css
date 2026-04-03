@@ -507,15 +507,10 @@ header {
   letter-spacing: 0.2px;
 }
 
-/* Org */
-.org-badge.org-work {
-  background: rgba(88, 166, 255, 0.1);
-  color: var(--accent);
-}
-
-.org-badge.org-personal {
-  background: rgba(188, 140, 255, 0.1);
-  color: var(--purple);
+/* Org — colors set inline from config */
+.org-badge {
+  background: rgba(139, 148, 158, 0.1);
+  color: var(--text-muted);
 }
 
 /* Review status */
@@ -649,4 +644,143 @@ header {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--surface-hover);
+}
+
+/* Org list in settings */
+
+.org-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.org-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: grab;
+  transition: border-color 0.15s, opacity 0.15s;
+}
+
+.org-row:active {
+  cursor: grabbing;
+}
+
+.org-row.dragging {
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.org-row.drag-over {
+  border-color: var(--accent);
+}
+
+.org-drag-handle {
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.org-name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+
+.org-name-input:focus {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.org-name-label {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.org-color-input {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.org-color-input::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.org-color-input::-webkit-color-swatch {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.org-work-toggle {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.org-work-toggle.active {
+  background: rgba(88, 166, 255, 0.15);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.org-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.org-delete-btn:hover {
+  color: var(--red);
+}
+
+.btn-add {
+  width: 100%;
+  padding: 6px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-add:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-secondary);
 }

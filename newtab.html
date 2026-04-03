@@ -113,15 +113,12 @@
         </button>
       </div>
       <div class="modal-body">
-        <label for="work-orgs-input">Work organisations</label>
-        <p class="field-hint">Comma-separated org or owner names. PRs in these repos show under <strong>Work</strong>; everything else is <strong>Personal</strong>.</p>
-        <input type="text" id="work-orgs-input" placeholder="e.g. my-company, my-company-tools">
+        <label>Organisations</label>
+        <p class="field-hint">Drag to reorder. Your username is always included at the end. PRs from unlisted orgs appear under your account.</p>
+        <div id="org-list" class="org-list"></div>
+        <button type="button" id="add-org-btn" class="btn-add">+ Add org</button>
 
-        <label for="personal-orgs-input">Personal organisations</label>
-        <p class="field-hint">Additional personal orgs to track. Your own repos are always included.</p>
-        <input type="text" id="personal-orgs-input" placeholder="e.g. my-oss-org, side-project-org">
-
-        <label for="theme-select">Theme</label>
+        <label>Theme</label>
         <div class="theme-picker" id="theme-picker">
           <button type="button" data-theme="system" class="theme-option active" title="System">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
