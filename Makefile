@@ -26,12 +26,16 @@ menu:
 	@printf "  $(BOLD)$(GREEN)=== Setup ===$(RESET)\n"
 	@printf "   $(YELLOW)4)$(RESET)  make install           $(DIM)Install dev dependencies$(RESET)\n"
 	@printf "\n"
+	@printf "  $(BOLD)$(GREEN)=== CI ===$(RESET)\n"
+	@printf "   $(YELLOW)5)$(RESET)  make ci                $(DIM)Run lint + test + build (CI pipeline)$(RESET)\n"
+	@printf "\n"
 	@read -p "  Enter choice: " choice; \
 	case $$choice in \
 		1) $(MAKE) lint ;; \
 		2) $(MAKE) test ;; \
 		3) $(MAKE) build ;; \
 		4) $(MAKE) install ;; \
+		5) $(MAKE) ci ;; \
 		*) echo "Invalid choice" ;; \
 	esac
 
@@ -44,9 +48,11 @@ test:
 lint:
 	npx eslint *.js
 
+ci: lint test build
+
 build:
 	@rm -f github-pr-dashboard.zip
-	zip -r github-pr-dashboard.zip manifest.json *.html *.css *.js icons/ -x "node_modules/*" "*.svg" "package*.json" ".eslintrc*" "test/*"
+	zip -r github-pr-dashboard.zip manifest.json *.html *.css *.js icons/ _locales/ -x "node_modules/*" "*.svg" "package*.json" "eslint.config.*" "test/*"
 
 help:
 	@printf "\n"
@@ -56,6 +62,7 @@ help:
 	@printf "  $(CYAN)make lint$(RESET)              Run ESLint\n"
 	@printf "  $(CYAN)make build$(RESET)             Create distributable zip\n"
 	@printf "  $(CYAN)make install$(RESET)           Install dev dependencies\n"
+	@printf "  $(CYAN)make ci$(RESET)                Run lint + test + build\n"
 	@printf "\n"
 
 list: help

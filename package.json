@@ -1,19 +1,16 @@
 {
-  "name": "github_chrome_new_tab",
+  "name": "github-pr-dashboard",
   "version": "1.0.0",
-  "description": "",
+  "description": "Chrome/Firefox extension that replaces the new tab page with a GitHub PR dashboard",
   "main": "github.js",
-  "directories": {
-    "doc": "docs"
-  },
   "scripts": {
     "test": "vitest run"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Internet Blacksmith",
+  "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
+    "eslint": "10.1.0",
     "vitest": "4.1.2"
   }
 }
