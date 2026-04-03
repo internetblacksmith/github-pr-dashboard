@@ -67,26 +67,3 @@ describe("hasUnrespondedComments", function () {
   });
 });
 
-describe("ciStatus", function () {
-  it("returns 'unknown' when no commits data exists", function () {
-    expect(mod.ciStatus({})).toBe("unknown");
-    expect(mod.ciStatus({ commits: null })).toBe("unknown");
-    expect(mod.ciStatus({ commits: { nodes: [] } })).toBe("unknown");
-  });
-
-  it("returns 'unknown' when no rollup exists", function () {
-    expect(mod.ciStatus({
-      commits: { nodes: [{ commit: {} }] },
-    })).toBe("unknown");
-  });
-
-  it("returns lowercased state from rollup", function () {
-    expect(mod.ciStatus({
-      commits: { nodes: [{ commit: { statusCheckRollup: { state: "SUCCESS" } } }] },
-    })).toBe("success");
-
-    expect(mod.ciStatus({
-      commits: { nodes: [{ commit: { statusCheckRollup: { state: "FAILURE" } } }] },
-    })).toBe("failure");
-  });
-});

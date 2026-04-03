@@ -24,19 +24,7 @@ export function loadSource(filename, extraGlobals) {
     setTimeout: globalThis.setTimeout,
     clearTimeout: globalThis.clearTimeout,
     document: {
-      createElement: function (tag) {
-        return {
-          textContent: "",
-          get innerHTML() {
-            return this.textContent
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;")
-              .replace(/'/g, "&#39;");
-          },
-        };
-      },
+      createElement: function () { return {}; },
     },
     URL: globalThis.URL,
     Date: globalThis.Date,
@@ -47,6 +35,7 @@ export function loadSource(filename, extraGlobals) {
     Math: globalThis.Math,
     parseInt: globalThis.parseInt,
     isNaN: globalThis.isNaN,
+    t: function (key) { return key; },
     ...extraGlobals,
   };
 

@@ -9,6 +9,19 @@
  * Split into two queries to avoid GitHub 502 timeouts on complex requests.
  */
 
+// i18n helper — available to all scripts loaded after github.js
+var t = (function () {
+  var i18nApi = (typeof browser !== "undefined" && browser.i18n) ? browser.i18n
+    : (typeof chrome !== "undefined" && chrome.i18n) ? chrome.i18n
+    : null;
+  return function (key) {
+    if (!i18nApi) return key;
+    var subs = [];
+    for (var i = 1; i < arguments.length; i++) subs.push(String(arguments[i]));
+    return i18nApi.getMessage(key, subs) || key;
+  };
+})();
+
 var GITHUB_GRAPHQL = "https://api.github.com/graphql";
 var MAX_RETRIES = 3;
 var RETRY_CODES = [502, 503, 504, 429];
@@ -96,27 +109,25 @@ async function fetchDashboardData(token, personalOrgs, onStatus) {
   personalOrgs = personalOrgs || [];
   var status = onStatus || function () {};
 
-  status("Connecting to GitHub...");
+  status(t("statusConnecting"));
   var username = await fetchUsername(token);
 
-  status("Fetching reviews & PRs for @" + username + "...");
+  status(t("statusFetching", username));
   var corePromise = fetchCoreData(token, username);
 
-  status("Scanning personal projects...");
+  status(t("statusScanning"));
   var personalPromise = fetchPersonalPrs(token, username, personalOrgs);
 
   var results = await Promise.all([corePromise, personalPromise]);
   var coreData = results[0];
   var personalPrs = results[1];
 
-  status("Crunching the numbers...");
+  status(t("statusProcessing"));
 
   // GraphQL search returns Issue and PullRequest nodes; filter to PRs only
   var authored = coreData.authored.nodes.filter(function (pr) { return pr.title; });
   var reviewRequested = coreData.reviewRequested.nodes.filter(function (pr) { return pr.title; });
-  var needsResponse = authored.filter(function (pr) { return hasUnrespondedComments(pr, username); });
-
-  return { username: username, reviewRequested: reviewRequested, authored: authored, needsResponse: needsResponse, personalPrs: personalPrs };
+  return { username: username, reviewRequested: reviewRequested, authored: authored, personalPrs: personalPrs };
 }
 
 function fetchCoreData(token, username) {
@@ -193,9 +204,3 @@ function hasUnrespondedComments(pr, username) {
   return false;
 }
 
-function ciStatus(pr) {
-  var commits = pr.commits && pr.commits.nodes;
-  var rollup = commits && commits[0] && commits[0].commit && commits[0].commit.statusCheckRollup;
-  if (!rollup) return "unknown";
-  return rollup.state.toLowerCase();
-}
