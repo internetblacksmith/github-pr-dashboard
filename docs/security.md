@@ -17,13 +17,15 @@ The GitHub PAT is stored in `chrome.storage.local` — the standard approach use
 
 ## Content Security Policy
 
+Declared explicitly in `manifest.json` under `content_security_policy.extension_pages`:
+
 ```
 script-src 'self'; object-src 'none'; connect-src https://api.github.com
 ```
 
 - No inline scripts
 - No external JavaScript
-- Network restricted to GitHub API only
+- Network restricted to GitHub API only via both CSP `connect-src` and `host_permissions`
 
 ## XSS Prevention
 
