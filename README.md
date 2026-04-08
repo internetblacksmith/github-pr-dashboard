@@ -26,18 +26,47 @@ When PRs span multiple orgs, a **filter bar** lets you toggle visibility by orga
 
 ## Install
 
-### Chrome
+Three ways to install, depending on what you have:
 
-1. Clone or download this repo
-2. Go to `chrome://extensions`
-3. Enable **Developer mode** (top right)
-4. Click **Load unpacked** and select this folder
+### From a release zip
 
-### Firefox
+Grab the latest `github-pr-dashboard.zip` from the [Releases page](https://github.com/internetblacksmith/github-pr-dashboard/releases) and unzip it somewhere you'll keep it.
 
+**Chrome:**
+1. Go to `chrome://extensions`
+2. Enable **Developer mode** (top right)
+3. Click **Load unpacked** and select the unzipped folder
+
+**Firefox:**
 1. Go to `about:debugging#/runtime/this-firefox`
 2. Click **Load Temporary Add-on**
-3. Select `manifest.json` from this folder
+3. Select `manifest.json` from the unzipped folder
+
+### From source (no build step)
+
+Clone the repo and load it directly — no dependencies needed to just run the extension:
+
+```bash
+git clone https://github.com/internetblacksmith/github-pr-dashboard.git
+cd github-pr-dashboard
+```
+
+Then follow the same "Load unpacked" / "Load Temporary Add-on" steps above, pointing to the cloned folder.
+
+### Build your own zip
+
+If you want to create your own distributable zip:
+
+```bash
+git clone https://github.com/internetblacksmith/github-pr-dashboard.git
+cd github-pr-dashboard
+make install    # installs dev dependencies (for tests/lint only)
+make build      # creates github-pr-dashboard.zip
+```
+
+The build excludes tests, lint config, and dev files. Load the zip the same way as a release zip.
+
+> **Note:** Firefox "Load Temporary Add-on" installs are removed when you close the browser. For a persistent install on Firefox, you'll need a signed build from [addons.mozilla.org](https://addons.mozilla.org).
 
 ## Setup
 
