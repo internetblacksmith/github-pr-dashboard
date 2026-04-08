@@ -1,4 +1,5 @@
 .DEFAULT_GOAL := menu
+.PHONY: menu install test lint ci build demo release help list
 
 # Colors
 CYAN    := \033[36m
@@ -29,6 +30,10 @@ menu:
 	@printf "  $(BOLD)$(GREEN)=== CI ===$(RESET)\n"
 	@printf "   $(YELLOW)5)$(RESET)  make ci                $(DIM)Run lint + test + build (CI pipeline)$(RESET)\n"
 	@printf "\n"
+	@printf "  $(BOLD)$(GREEN)=== Release ===$(RESET)\n"
+	@printf "   $(YELLOW)6)$(RESET)  make release           $(DIM)Bump version, tag, and push$(RESET)\n"
+	@printf "   $(YELLOW)7)$(RESET)  make demo              $(DIM)Build demo extension for screenshots$(RESET)\n"
+	@printf "\n"
 	@read -p "  Enter choice: " choice; \
 	case $$choice in \
 		1) $(MAKE) lint ;; \
@@ -36,6 +41,8 @@ menu:
 		3) $(MAKE) build ;; \
 		4) $(MAKE) install ;; \
 		5) $(MAKE) ci ;; \
+		6) $(MAKE) release ;; \
+		7) $(MAKE) demo ;; \
 		*) echo "Invalid choice" ;; \
 	esac
 
@@ -46,13 +53,64 @@ test:
 	npm test
 
 lint:
-	npx eslint *.js
+	npx eslint --no-warn-ignored *.js
 
 ci: lint test build
 
 build:
 	@rm -f github-pr-dashboard.zip
-	zip -r github-pr-dashboard.zip manifest.json *.html *.css *.js icons/ _locales/ -x "node_modules/*" "*.svg" "package*.json" "eslint.config.*" "test/*"
+	zip -r github-pr-dashboard.zip manifest.json *.html *.css *.js icons/ _locales/ -x "node_modules/*" "*.svg" "package*.json" "eslint.config.*" "test/*" "demo/*"
+
+demo:
+	@rm -rf demo-build
+	@mkdir -p demo-build
+	@cp manifest.json newtab.html newtab.css newtab.js score.js demo-build/
+	@cp demo/github.js demo-build/github.js
+	@cp -r icons _locales demo-build/
+	@printf "\n$(BOLD)$(GREEN)Demo extension built in demo-build/$(RESET)\n\n"
+	@printf "  Load it in Chrome:\n"
+	@printf "    1. Open $(CYAN)chrome://extensions$(RESET)\n"
+	@printf "    2. Enable $(CYAN)Developer mode$(RESET)\n"
+	@printf "    3. Click $(CYAN)Load unpacked$(RESET) and select $(CYAN)demo-build/$(RESET)\n"
+	@printf "    4. Open a new tab and screenshot\n\n"
+
+release:
+	@CURRENT=$$(node -p "require('./package.json').version"); \
+	MAJOR=$$(echo $$CURRENT | cut -d. -f1); \
+	MINOR=$$(echo $$CURRENT | cut -d. -f2); \
+	PATCH=$$(echo $$CURRENT | cut -d. -f3); \
+	NEXT_PATCH="$$MAJOR.$$MINOR.$$((PATCH + 1))"; \
+	NEXT_MINOR="$$MAJOR.$$((MINOR + 1)).0"; \
+	NEXT_MAJOR="$$((MAJOR + 1)).0.0"; \
+	printf "\n$(BOLD)Current version: $(CYAN)$$CURRENT$(RESET)\n\n"; \
+	printf "  $(YELLOW)1)$(RESET)  $$NEXT_PATCH    $(DIM)patch$(RESET)\n"; \
+	printf "  $(YELLOW)2)$(RESET)  $$NEXT_MINOR    $(DIM)minor$(RESET)\n"; \
+	printf "  $(YELLOW)3)$(RESET)  $$NEXT_MAJOR    $(DIM)major$(RESET)\n"; \
+	printf "  $(YELLOW)4)$(RESET)  custom\n\n"; \
+	read -p "  Choose [1]: " BUMP; \
+	case "$${BUMP:-1}" in \
+		1) VERSION=$$NEXT_PATCH ;; \
+		2) VERSION=$$NEXT_MINOR ;; \
+		3) VERSION=$$NEXT_MAJOR ;; \
+		4) read -p "  Version: " VERSION ;; \
+		*) echo "Aborted."; exit 1 ;; \
+	esac; \
+	if [ -z "$$VERSION" ]; then echo "Aborted."; exit 1; fi; \
+	printf "\n$(BOLD)Releasing $(CYAN)v$$VERSION$(RESET)\n\n"; \
+	node -e "var p=require('./package.json');p.version='$$VERSION';require('fs').writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"; \
+	sed -i 's/"version": ".*"/"version": "'"$$VERSION"'"/' manifest.json; \
+	$(MAKE) ci; \
+	git add package.json manifest.json; \
+	git commit -m "Release v$$VERSION"; \
+	git tag "v$$VERSION"; \
+	printf "\n$(BOLD)$(GREEN)Tagged v$$VERSION$(RESET)\n"; \
+	read -p "Push to remote? [y/N] " PUSH; \
+	if [ "$$PUSH" = "y" ] || [ "$$PUSH" = "Y" ]; then \
+		git push && git push --tags; \
+		printf "$(BOLD)$(GREEN)Pushed. GitHub Actions will create the release.$(RESET)\n"; \
+	else \
+		printf "Run $(CYAN)git push && git push --tags$(RESET) when ready.\n"; \
+	fi
 
 help:
 	@printf "\n"
@@ -63,6 +121,8 @@ help:
 	@printf "  $(CYAN)make build$(RESET)             Create distributable zip\n"
 	@printf "  $(CYAN)make install$(RESET)           Install dev dependencies\n"
 	@printf "  $(CYAN)make ci$(RESET)                Run lint + test + build\n"
+	@printf "  $(CYAN)make release$(RESET)           Bump version, tag, and push\n"
+	@printf "  $(CYAN)make demo$(RESET)              Build demo extension for screenshots\n"
 	@printf "\n"
 
 list: help

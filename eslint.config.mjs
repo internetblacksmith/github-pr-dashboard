@@ -39,6 +39,6 @@ export default [
     },
   },
   {
-    ignores: ["test/", "node_modules/"],
+    ignores: ["test/", "node_modules/", "demo/", "demo-build/"],
   },
 ];
