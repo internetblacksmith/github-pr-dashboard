@@ -31,8 +31,9 @@ menu:
 	@printf "   $(YELLOW)5)$(RESET)  make ci                $(DIM)Run lint + test + build (CI pipeline)$(RESET)\n"
 	@printf "\n"
 	@printf "  $(BOLD)$(GREEN)=== Release ===$(RESET)\n"
-	@printf "   $(YELLOW)6)$(RESET)  make release           $(DIM)Bump version, tag, and push$(RESET)\n"
-	@printf "   $(YELLOW)7)$(RESET)  make demo              $(DIM)Build demo extension for screenshots$(RESET)\n"
+	@printf "   $(YELLOW)6)$(RESET)  make release           $(DIM)Bump version and create PR$(RESET)\n"
+	@printf "   $(YELLOW)7)$(RESET)  make tag               $(DIM)Tag merged release and push$(RESET)\n"
+	@printf "   $(YELLOW)8)$(RESET)  make demo              $(DIM)Build demo extension for screenshots$(RESET)\n"
 	@printf "\n"
 	@read -p "  Enter choice: " choice; \
 	case $$choice in \
@@ -42,7 +43,8 @@ menu:
 		4) $(MAKE) install ;; \
 		5) $(MAKE) ci ;; \
 		6) $(MAKE) release ;; \
-		7) $(MAKE) demo ;; \
+		7) $(MAKE) tag ;; \
+		8) $(MAKE) demo ;; \
 		*) echo "Invalid choice" ;; \
 	esac
 
@@ -97,20 +99,25 @@ release:
 	esac; \
 	if [ -z "$$VERSION" ]; then echo "Aborted."; exit 1; fi; \
 	printf "\n$(BOLD)Releasing $(CYAN)v$$VERSION$(RESET)\n\n"; \
+	BRANCH="release/v$$VERSION"; \
+	git checkout -b "$$BRANCH"; \
 	node -e "var p=require('./package.json');p.version='$$VERSION';require('fs').writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"; \
 	sed -i 's/"version": ".*"/"version": "'"$$VERSION"'"/' manifest.json; \
 	$(MAKE) ci; \
 	git add package.json manifest.json; \
 	git commit -m "Release v$$VERSION"; \
-	git tag "v$$VERSION"; \
-	printf "\n$(BOLD)$(GREEN)Tagged v$$VERSION$(RESET)\n"; \
-	read -p "Push to remote? [y/N] " PUSH; \
-	if [ "$$PUSH" = "y" ] || [ "$$PUSH" = "Y" ]; then \
-		git push && git push --tags; \
-		printf "$(BOLD)$(GREEN)Pushed. GitHub Actions will create the release.$(RESET)\n"; \
-	else \
-		printf "Run $(CYAN)git push && git push --tags$(RESET) when ready.\n"; \
-	fi
+	git push -u origin "$$BRANCH"; \
+	gh pr create --title "Release v$$VERSION" --body "Bump version to $$VERSION" --base main; \
+	printf "\n$(BOLD)$(GREEN)PR created for v$$VERSION$(RESET)\n"; \
+	printf "  After merging, run: $(CYAN)make tag VERSION=$$VERSION$(RESET)\n\n"
+
+tag:
+	@if [ -z "$(VERSION)" ]; then echo "Usage: make tag VERSION=x.y.z"; exit 1; fi
+	@git checkout main
+	@git pull
+	@git tag "v$(VERSION)"
+	@git push --tags
+	@printf "\n$(BOLD)$(GREEN)Tagged v$(VERSION) — GitHub Actions will create the release.$(RESET)\n"
 
 help:
 	@printf "\n"
@@ -121,7 +128,8 @@ help:
 	@printf "  $(CYAN)make build$(RESET)             Create distributable zip\n"
 	@printf "  $(CYAN)make install$(RESET)           Install dev dependencies\n"
 	@printf "  $(CYAN)make ci$(RESET)                Run lint + test + build\n"
-	@printf "  $(CYAN)make release$(RESET)           Bump version, tag, and push\n"
+	@printf "  $(CYAN)make release$(RESET)           Bump version and create PR\n"
+	@printf "  $(CYAN)make tag$(RESET)               Tag merged release and push\n"
 	@printf "  $(CYAN)make demo$(RESET)              Build demo extension for screenshots\n"
 	@printf "\n"
 
