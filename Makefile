@@ -58,8 +58,8 @@ lint:
 ci: lint test build
 
 build:
-	@rm -f github-pr-dashboard.zip
-	zip -r github-pr-dashboard.zip manifest.json *.html *.css *.js icons/ _locales/ -x "node_modules/*" "*.svg" "package*.json" "eslint.config.*" "test/*" "demo/*"
+	@rm -f github-pr-dashboard-chrome.zip
+	zip -r github-pr-dashboard-chrome.zip manifest.json *.html *.css *.js icons/ _locales/ -x "node_modules/*" "*.svg" "package*.json" "eslint.config.*" "test/*" "demo/*"
 
 demo:
 	@rm -rf demo-build
