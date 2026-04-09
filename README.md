@@ -30,17 +30,19 @@ Three ways to install, depending on what you have:
 
 ### From a release zip
 
-Grab the latest `github-pr-dashboard.zip` from the [Releases page](https://github.com/internetblacksmith/github-pr-dashboard/releases) and unzip it somewhere you'll keep it.
+Grab the latest release from the [Releases page](https://github.com/internetblacksmith/github-pr-dashboard/releases):
 
-**Chrome:**
+**Chrome** — download `github-pr-dashboard-chrome.zip`, unzip it, then:
 1. Go to `chrome://extensions`
 2. Enable **Developer mode** (top right)
 3. Click **Load unpacked** and select the unzipped folder
 
-**Firefox:**
+**Firefox** — download `github-pr-dashboard-firefox-unsigned.xpi` for temporary install:
 1. Go to `about:debugging#/runtime/this-firefox`
 2. Click **Load Temporary Add-on**
-3. Select `manifest.json` from the unzipped folder
+3. Select the `.xpi` file
+
+> **Note:** The Firefox `.xpi` in releases is unsigned — it works as a temporary add-on but is removed when you close the browser. For a persistent Firefox install, use the signed version from [addons.mozilla.org](https://addons.mozilla.org) (when available).
 
 ### From source (no build step)
 

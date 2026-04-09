@@ -33,12 +33,20 @@ jobs:
             "package*.json" "eslint.config.*" ".github/*" "AGENTS.md" \
             "CLAUDE.md" "CHANGELOG.md" "PRIVACY.md" "README.md" ".gitignore" \
             ".node-version" "docs/*" "Makefile"
-          mv github_pr_dashboard-*.zip github-pr-dashboard-firefox.xpi
+          mv github_pr_dashboard-*.zip github-pr-dashboard-firefox-unsigned.xpi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             github-pr-dashboard-chrome.zip
-            github-pr-dashboard-firefox.xpi
+            github-pr-dashboard-firefox-unsigned.xpi
           generate_release_notes: true
+          append_body: true
+          body: |
+            ## Install
+
+            | Browser | File | Notes |
+            |---------|------|-------|
+            | Chrome | `github-pr-dashboard-chrome.zip` | Unzip, then Load unpacked in `chrome://extensions` |
+            | Firefox | `github-pr-dashboard-firefox-unsigned.xpi` | **Unsigned** — works as a temporary add-on only (removed on browser close). For a persistent install, use the signed version from [addons.mozilla.org](https://addons.mozilla.org) when available. |
