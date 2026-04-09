@@ -77,7 +77,8 @@ demo:
 	@printf "    4. Open a new tab and screenshot\n\n"
 
 release:
-	@CURRENT=$$(node -p "require('./package.json').version"); \
+	@set -e; \
+	CURRENT=$$(node -p "require('./package.json').version"); \
 	MAJOR=$$(echo $$CURRENT | cut -d. -f1); \
 	MINOR=$$(echo $$CURRENT | cut -d. -f2); \
 	PATCH=$$(echo $$CURRENT | cut -d. -f3); \
@@ -117,7 +118,7 @@ release:
 tag:
 	@if [ -z "$(VERSION)" ]; then echo "Usage: make tag VERSION=x.y.z"; exit 1; fi
 	@git checkout main
-	@git pull
+	@git pull --ff-only origin main
 	@git tag "v$(VERSION)"
 	@git push origin "v$(VERSION)"
 	@printf "\n$(BOLD)$(GREEN)Tagged v$(VERSION) — GitHub Actions will create the release.$(RESET)\n"
