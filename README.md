@@ -74,8 +74,10 @@ On first new tab, you'll be prompted to paste a GitHub token.
 
 **Option A — Fine-grained token (recommended):**
 1. Go to [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
-2. Grant **Pull requests** (read) access on **All repositories**
-3. Paste the token
+2. Resource owner: **your account**
+3. Repository access: **All repositories**
+4. Permissions → Repository → Pull requests: **Read**
+5. Paste the token
 
 **Option B — Classic token:**
 1. Go to [github.com/settings/tokens/new](https://github.com/settings/tokens/new?description=GitHub%20PR%20Dashboard&scopes=repo)

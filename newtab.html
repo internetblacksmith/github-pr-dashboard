@@ -48,7 +48,13 @@
 
       <h3 data-i18n="setupGetStarted">Get started</h3>
       <ol class="setup-steps">
-        <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a fine-grained token</a> with <strong>Pull requests</strong> (read) access on all repositories</li>
+        <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a fine-grained token</a>:
+          <ul class="setup-substeps">
+            <li>Resource owner: <strong>your account</strong></li>
+            <li>Repository access: <strong>All repositories</strong></li>
+            <li>Permissions → Repository → Pull requests: <strong>Read</strong></li>
+          </ul>
+        </li>
         <li data-i18n="setupTokenStep2">Paste it below</li>
       </ol>
       <p class="setup-alt">Or use a <a href="https://github.com/settings/tokens/new?description=GitHub%20PR%20Dashboard&scopes=repo" target="_blank" rel="noopener">classic token</a> with <code>repo</code> scope.</p>

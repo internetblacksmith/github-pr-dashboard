@@ -164,6 +164,9 @@
   "setupFailed": {
     "message": "Setup failed. Check the console for details."
   },
+  "tokenScopes": {
+    "message": "Token doesn\u2019t have the right permissions. Make sure Repository access is set to \u201cAll repositories\u201d and Pull requests permission is \u201cRead\u201d."
+  },
   "errorGitHub": {
     "message": "GitHub is having issues right now. Hit refresh to try again, or just open a new tab in a bit."
   },
@@ -175,6 +178,9 @@
   },
   "errorNetwork": {
     "message": "Can\u2019t reach GitHub. Check your internet connection and try again."
+  },
+  "errorScopes": {
+    "message": "Your token doesn\u2019t have enough permissions. Try clearing it (logout button) and creating a new one with \u201cAll repositories\u201d access and Pull requests (read) permission."
   },
   "errorGeneric": {
     "message": "Something went wrong loading your PRs. Hit refresh to try again."

@@ -234,9 +234,15 @@ function setupSetupForm() {
       await loadDashboard(token);
     } catch (err) {
       console.error("Setup failed:", err);
-      var msg = err.message?.includes("401")
-        ? t("tokenInvalid")
-        : t("setupFailed");
+      var errMsg = err.message || "";
+      var msg;
+      if (errMsg.indexOf("401") !== -1) {
+        msg = t("tokenInvalid");
+      } else if (errMsg.indexOf("403") !== -1 || errMsg.indexOf("INSUFFICIENT") !== -1 || errMsg.indexOf("FORBIDDEN") !== -1) {
+        msg = t("tokenScopes");
+      } else {
+        msg = t("setupFailed");
+      }
       showError(errorEl, msg);
     }
   };
@@ -842,6 +848,9 @@ function friendlyError(err) {
   }
   if (msg.indexOf("401") !== -1) {
     return t("errorAuth");
+  }
+  if (msg.indexOf("403") !== -1 || msg.indexOf("INSUFFICIENT") !== -1 || msg.indexOf("FORBIDDEN") !== -1) {
+    return t("errorScopes");
   }
   if (msg.indexOf("Failed to fetch") !== -1 || msg.indexOf("NetworkError") !== -1) {
     return t("errorNetwork");

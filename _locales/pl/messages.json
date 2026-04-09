@@ -164,6 +164,9 @@
   "setupFailed": {
     "message": "Konfiguracja nie powiod\u0142a si\u0119. Sprawd\u017a konsol\u0119."
   },
+  "tokenScopes": {
+    "message": "Token nie ma wymaganych uprawnie\u0144. Upewnij si\u0119, \u017ce dost\u0119p do repozytori\u00f3w jest ustawiony na \u201eAll repositories\u201d, a uprawnienie Pull requests na \u201eRead\u201d."
+  },
   "errorGitHub": {
     "message": "GitHub ma teraz problemy. Spr\u00f3buj od\u015bwie\u017cy\u0107 lub otw\u00f3rz now\u0105 kart\u0119 za chwil\u0119."
   },
@@ -175,6 +178,9 @@
   },
   "errorNetwork": {
     "message": "Nie mo\u017cna po\u0142\u0105czy\u0107 si\u0119 z GitHubem. Sprawd\u017a po\u0142\u0105czenie internetowe i spr\u00f3buj ponownie."
+  },
+  "errorScopes": {
+    "message": "Token nie ma wystarczaj\u0105cych uprawnie\u0144. Spr\u00f3buj go usun\u0105\u0107 (przycisk wyloguj) i utworzy\u0107 nowy z dost\u0119pem do \u201eAll repositories\u201d i uprawnieniem Pull requests (Read)."
   },
   "errorGeneric": {
     "message": "Co\u015b posz\u0142o nie tak podczas \u0142adowania PR. Spr\u00f3buj od\u015bwie\u017cy\u0107."

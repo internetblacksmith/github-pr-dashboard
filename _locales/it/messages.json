@@ -164,6 +164,9 @@
   "setupFailed": {
     "message": "Configurazione fallita. Controlla la console per i dettagli."
   },
+  "tokenScopes": {
+    "message": "Il token non ha i permessi necessari. Assicurati che l\u2019accesso ai repository sia impostato su \u201cAll repositories\u201d e che il permesso Pull requests sia \u201cRead\u201d."
+  },
   "errorGitHub": {
     "message": "GitHub ha problemi in questo momento. Prova ad aggiornare, oppure apri una nuova scheda tra poco."
   },
@@ -175,6 +178,9 @@
   },
   "errorNetwork": {
     "message": "Impossibile raggiungere GitHub. Controlla la connessione internet e riprova."
+  },
+  "errorScopes": {
+    "message": "Il token non ha permessi sufficienti. Prova a cancellarlo (pulsante disconnetti) e a crearne uno nuovo con accesso a \u201cAll repositories\u201d e permesso Pull requests (Read)."
   },
   "errorGeneric": {
     "message": "Qualcosa \u00e8 andato storto nel caricamento delle PR. Prova ad aggiornare."

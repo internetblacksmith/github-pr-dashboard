@@ -138,6 +138,17 @@ a:hover {
   margin-bottom: 6px;
 }
 
+.setup-substeps {
+  margin: 4px 0 0 16px;
+  list-style: disc;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.setup-substeps strong {
+  color: var(--text-secondary);
+}
+
 .setup-steps a {
   color: var(--accent);
 }
