@@ -355,19 +355,9 @@ header {
   border-color: var(--text-muted);
 }
 
-.icon-btn.danger:hover,
-.icon-btn.confirm {
+.icon-btn.danger:hover {
   color: var(--red);
   border-color: var(--red);
-}
-
-.icon-btn.confirm {
-  animation: pulse-red 0.6s ease-in-out infinite alternate;
-}
-
-@keyframes pulse-red {
-  from { border-color: var(--red); }
-  to { border-color: transparent; }
 }
 
 /* Loading */
@@ -789,6 +779,59 @@ header {
 
 .modal-body {
   padding: 20px 24px 24px;
+}
+
+.modal-sm {
+  width: 340px;
+  padding: 24px;
+  text-align: center;
+}
+
+.modal-sm h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 8px;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--text-muted);
+  color: var(--text);
+}
+
+.btn-danger {
+  flex: 1;
+  padding: 8px;
+  background: var(--red);
+  border: 1px solid var(--red);
+  border-radius: var(--radius);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-danger:hover {
+  opacity: 0.85;
 }
 
 .field-hint {

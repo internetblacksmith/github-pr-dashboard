@@ -48,14 +48,9 @@
 
       <h3 data-i18n="setupGetStarted">Get started</h3>
       <ol class="setup-steps">
-        <li><a href="https://github.com/settings/personal-access-tokens/new?name=GitHub+PR+Dashboard&description=Read-only+access+for+PR+dashboard+extension&pull_requests=read" target="_blank" rel="noopener">Create a fine-grained token</a> (link pre-fills name and permissions), then set:
-          <ul class="setup-substeps">
-            <li>Repository access: <strong>All repositories</strong></li>
-          </ul>
-        </li>
+        <li><a href="https://github.com/settings/tokens/new?description=GitHub%20PR%20Dashboard&scopes=repo" target="_blank" rel="noopener">Create a personal access token</a> with <code>repo</code> scope (link pre-fills it)</li>
         <li data-i18n="setupTokenStep2">Paste it below</li>
       </ol>
-      <p class="setup-alt">Or use a <a href="https://github.com/settings/tokens/new?description=GitHub%20PR%20Dashboard&scopes=repo" target="_blank" rel="noopener">classic token</a> with <code>repo</code> scope.</p>
       <form id="setup-form" aria-label="GitHub token setup">
         <label for="setup-token" data-i18n="setupTokenLabel">GitHub Token</label>
         <input type="password" id="setup-token" name="github-token" data-i18n-placeholder="setupTokenPlaceholder" placeholder="ghp_..." autocomplete="current-password" autofocus>
@@ -189,6 +184,18 @@
         </div>
 
         <button id="settings-save" class="btn-primary" data-i18n="settingsSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout confirm modal -->
+  <div id="logout-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="logout-modal-title" hidden>
+    <div class="modal modal-sm">
+      <h2 id="logout-modal-title" data-i18n="logoutConfirmTitle">Clear token & logout?</h2>
+      <p class="field-hint" data-i18n="logoutConfirmDesc">This will remove your GitHub token and all settings from this device.</p>
+      <div class="modal-actions">
+        <button id="logout-cancel" class="btn-secondary" data-i18n="logoutCancel">Cancel</button>
+        <button id="logout-confirm" class="btn-danger" data-i18n="logoutConfirm">Logout</button>
       </div>
     </div>
   </div>

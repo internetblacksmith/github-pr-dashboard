@@ -59,8 +59,17 @@
   "tooltipLogout": {
     "message": "Usu\u0144 token i wyloguj"
   },
-  "tooltipLogoutConfirm": {
-    "message": "Kliknij ponownie, aby potwierdzi\u0107"
+  "logoutConfirmTitle": {
+    "message": "Usun\u0105\u0107 token i wylogowa\u0107?"
+  },
+  "logoutConfirmDesc": {
+    "message": "Spowoduje to usuni\u0119cie tokena GitHub i wszystkich ustawie\u0144 z tego urz\u0105dzenia."
+  },
+  "logoutCancel": {
+    "message": "Anuluj"
+  },
+  "logoutConfirm": {
+    "message": "Wyloguj"
   },
   "columnReviewRequested": {
     "message": "Pro\u015bby o przegl\u0105d"

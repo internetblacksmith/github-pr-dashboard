@@ -59,8 +59,17 @@
   "tooltipLogout": {
     "message": "Cancella token e disconnetti"
   },
-  "tooltipLogoutConfirm": {
-    "message": "Clicca di nuovo per confermare"
+  "logoutConfirmTitle": {
+    "message": "Cancellare il token e disconnettersi?"
+  },
+  "logoutConfirmDesc": {
+    "message": "Questo rimuover\u00e0 il token GitHub e tutte le impostazioni da questo dispositivo."
+  },
+  "logoutCancel": {
+    "message": "Annulla"
+  },
+  "logoutConfirm": {
+    "message": "Disconnetti"
   },
   "columnReviewRequested": {
     "message": "Revisioni richieste"

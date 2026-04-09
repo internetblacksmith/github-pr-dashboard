@@ -292,21 +292,19 @@ function setupHeaderButtons(token) {
     await loadDashboard(token);
   };
 
-  // Inline confirmation instead of window.confirm (broken in Firefox extension pages)
-  var logoutBtn = document.getElementById("logout-btn");
-  var logoutPending = false;
-  logoutBtn.onclick = async function () {
-    if (!logoutPending) {
-      logoutPending = true;
-      logoutBtn.dataset.tooltip = t("tooltipLogoutConfirm");
-      logoutBtn.classList.add("confirm");
-      setTimeout(function () {
-        logoutPending = false;
-        logoutBtn.dataset.tooltip = t("tooltipLogout");
-        logoutBtn.classList.remove("confirm");
-      }, 3000);
-      return;
-    }
+  // Logout confirmation modal (window.confirm is broken in Firefox extension pages)
+  var logoutModal = document.getElementById("logout-modal");
+  document.getElementById("logout-btn").onclick = function () {
+    logoutModal.hidden = false;
+  };
+  document.getElementById("logout-cancel").onclick = function () {
+    logoutModal.hidden = true;
+  };
+  logoutModal.onclick = function (e) {
+    if (e.target === logoutModal) logoutModal.hidden = true;
+  };
+  document.getElementById("logout-confirm").onclick = async function () {
+    logoutModal.hidden = true;
     await storageRemove(["githubToken", "githubUsername", "orgs", "orgColors", "theme", "dashboardCache", "dashboardCacheTime"]);
     showScreen(setupScreen);
     setupSetupForm();

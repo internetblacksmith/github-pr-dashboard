@@ -59,8 +59,17 @@
   "tooltipLogout": {
     "message": "Clear token & logout"
   },
-  "tooltipLogoutConfirm": {
-    "message": "Click again to confirm"
+  "logoutConfirmTitle": {
+    "message": "Clear token & logout?"
+  },
+  "logoutConfirmDesc": {
+    "message": "This will remove your GitHub token and all settings from this device."
+  },
+  "logoutCancel": {
+    "message": "Cancel"
+  },
+  "logoutConfirm": {
+    "message": "Logout"
   },
   "columnReviewRequested": {
     "message": "Review Requested"
