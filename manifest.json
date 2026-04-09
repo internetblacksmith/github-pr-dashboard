@@ -7,7 +7,7 @@
   "permissions": ["storage"],
   "host_permissions": ["https://api.github.com/*"],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; connect-src https://api.github.com"
+    "extension_pages": "script-src 'self'; object-src 'none'"
   },
   "chrome_url_overrides": {
     "newtab": "newtab.html"
