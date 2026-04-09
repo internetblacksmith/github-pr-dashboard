@@ -73,11 +73,9 @@ The build excludes tests, lint config, and dev files. Load the zip the same way 
 On first new tab, you'll be prompted to paste a GitHub token.
 
 **Option A — Fine-grained token (recommended):**
-1. Go to [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
-2. Resource owner: **your account**
-3. Repository access: **All repositories**
-4. Permissions → Repository → Pull requests: **Read**
-5. Paste the token
+1. [Create a fine-grained token](https://github.com/settings/personal-access-tokens/new?name=GitHub+PR+Dashboard&description=Read-only+access+for+PR+dashboard+extension&pull_requests=read) (link pre-fills name and permissions)
+2. Set Repository access to **All repositories**
+3. Paste the token
 
 **Option B — Classic token:**
 1. Go to [github.com/settings/tokens/new](https://github.com/settings/tokens/new?description=GitHub%20PR%20Dashboard&scopes=repo)
