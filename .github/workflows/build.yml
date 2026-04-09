@@ -22,11 +22,22 @@ jobs:
       - name: Test
         run: npm test
 
-      - name: Build extension zip
+      - name: Build Chrome zip
         run: make build
+
+      - name: Build Firefox xpi
+        run: |
+          npx web-ext build --source-dir=. --artifacts-dir=. \
+            --ignore-files="node_modules/*" "test/*" "demo/*" "*.svg" \
+            "package*.json" "eslint.config.*" ".github/*" "AGENTS.md" \
+            "CLAUDE.md" "CHANGELOG.md" "PRIVACY.md" "README.md" ".gitignore" \
+            ".node-version" "docs/*" "Makefile"
+          mv github_pr_dashboard-*.zip github-pr-dashboard-firefox.xpi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: github-pr-dashboard.zip
+          files: |
+            github-pr-dashboard.zip
+            github-pr-dashboard-firefox.xpi
           generate_release_notes: true
