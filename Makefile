@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := menu
-.PHONY: menu install test lint ci build demo release help list
+.PHONY: menu install test lint ci build demo release tag help list
 
 # Colors
 CYAN    := \033[36m
@@ -100,6 +100,9 @@ release:
 	if [ -z "$$VERSION" ]; then echo "Aborted."; exit 1; fi; \
 	printf "\n$(BOLD)Releasing $(CYAN)v$$VERSION$(RESET)\n\n"; \
 	BRANCH="release/v$$VERSION"; \
+	git checkout main; \
+	git pull --ff-only origin main; \
+	if [ -n "$$(git status --porcelain)" ]; then echo "Working tree not clean"; exit 1; fi; \
 	git checkout -b "$$BRANCH"; \
 	node -e "var p=require('./package.json');p.version='$$VERSION';require('fs').writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"; \
 	sed -i 's/"version": ".*"/"version": "'"$$VERSION"'"/' manifest.json; \
@@ -116,7 +119,7 @@ tag:
 	@git checkout main
 	@git pull
 	@git tag "v$(VERSION)"
-	@git push --tags
+	@git push origin "v$(VERSION)"
 	@printf "\n$(BOLD)$(GREEN)Tagged v$(VERSION) — GitHub Actions will create the release.$(RESET)\n"
 
 help:
