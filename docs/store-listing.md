@@ -31,15 +31,16 @@ Features:
 - 10-minute cache — fast new tabs without hammering the API
 - Works offline after install — no external CDN dependencies
 - Cross-browser — Chrome and Firefox
+- Available in English, Italian, and Polish
 
 Privacy:
 
 - Your GitHub token stays on your device (chrome.storage.local, never synced)
 - Only permission requested is storage — no tabs, history, or cookies access
-- Network restricted to api.github.com via Content Security Policy
-- Fine-grained token with read-only PR access is all you need
+- Network restricted to api.github.com via host permissions
+- Classic personal access token with `repo` scope is all you need — the setup screen links directly to the token creator with the scope pre-filled
 
-Setup takes 30 seconds: create a GitHub token with Pull Requests (read) access, paste it on the first new tab, done.
+Setup takes 30 seconds: create a GitHub token with `repo` scope (link pre-filled), paste it on the first new tab, done.
 
 Open source: https://github.com/internetblacksmith/github-pr-dashboard
 

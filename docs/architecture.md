@@ -8,14 +8,16 @@ A Chrome Manifest V3 extension that overrides the new tab page with a GitHub PR 
 
 ```
 manifest.json       Chrome/Firefox extension manifest (MV3)
-github.js           GitHub GraphQL API client
+github.js           GitHub GraphQL API client + i18n t() helper
 score.js            Attention score engine — ranks PRs 0-100 by urgency
 newtab.html         New tab page markup
 newtab.css          Styles (light/dark/system themes)
 newtab.js           Page controller — auth flow, caching, rendering
-icons/              Extension icons
+_locales/           i18n message files (en, it, pl)
+icons/              Extension icons (SVG source + 16/48/128 PNG)
 docs/               Documentation
 test/               Vitest unit tests
+demo/               Demo github.js stub for screenshot builds
 ```
 
 ## Data Flow
@@ -26,7 +28,7 @@ test/               Vitest unit tests
        v
 [Check chrome.storage.local for token]
        |
-   No token? --> [Setup screen: paste token]
+   No token? --> [Setup screen: paste classic PAT with repo scope]
        |                    |
        v                    v
 [Check 10-min cache]    [Validate token against GitHub API]
@@ -60,3 +62,17 @@ Two parallel GraphQL queries to avoid GitHub 502 timeouts on complex requests:
 - **Personal query**: `is:open is:pr user:{username}` + one query per configured personal org — all open PRs in personal repos
 
 Results are cached client-side for 10 minutes to avoid hitting the API on every new tab.
+
+## i18n
+
+All user-facing strings go through a `t(key, ...subs)` helper defined at the top of `github.js`. It uses `chrome.i18n.getMessage()` (or `browser.i18n.getMessage()` on Firefox) which reads from `_locales/{lang}/messages.json`. The browser picks the locale automatically.
+
+Static strings in `newtab.html` use `data-i18n`, `data-i18n-tooltip`, `data-i18n-placeholder`, and `data-i18n-aria` attributes, hydrated on load by `translatePage()`. Dynamic strings in JS use `t()` directly.
+
+Three locales ship: English, Italian, Polish. Adding a language requires only a new `_locales/xx/messages.json` file.
+
+## Design Decisions
+
+- **Logout uses a confirmation modal** rather than `window.confirm()` — Firefox extension pages do not support `window.confirm`.
+- **401 during dashboard load shows an error banner** — tells the user to clear the token via the logout button and set up a new one.
+- **Classic PATs recommended over fine-grained** — fine-grained tokens may not see org repos unless the org admin has enabled them, which caused beta tester confusion.

@@ -72,15 +72,8 @@ The build excludes tests, lint config, and dev files. Load the zip the same way 
 
 On first new tab, you'll be prompted to paste a GitHub token.
 
-**Option A — Fine-grained token (recommended):**
-1. [Create a fine-grained token](https://github.com/settings/personal-access-tokens/new?name=GitHub+PR+Dashboard&description=Read-only+access+for+PR+dashboard+extension&pull_requests=read) (link pre-fills name and permissions)
-2. Set Repository access to **All repositories**
-3. Paste the token
-
-**Option B — Classic token:**
-1. Go to [github.com/settings/tokens/new](https://github.com/settings/tokens/new?description=GitHub%20PR%20Dashboard&scopes=repo)
-2. Check the `repo` scope
-3. Paste the token
+1. [Create a personal access token](https://github.com/settings/tokens/new?description=GitHub%20PR%20Dashboard&scopes=repo) (link pre-fills the `repo` scope)
+2. Paste the token on the setup screen
 
 ## Settings
 
@@ -94,6 +87,8 @@ Click the gear icon to configure:
 
 No build step, no framework, no external CDN. Vanilla HTML/CSS/JS for instant load times. The token stays in `chrome.storage.local` and never leaves your device. Network is restricted to `api.github.com` only.
 
+Available in English, Italian, and Polish — uses the browser's language setting automatically.
+
 See [docs/architecture.md](docs/architecture.md) and [docs/security.md](docs/security.md) for details.
 
 ## Development
@@ -104,6 +99,8 @@ make test       # Run tests (Vitest)
 make lint       # Run ESLint
 make build      # Create distributable zip
 make ci         # All of the above
+make demo       # Build demo extension for screenshots
+make release    # Interactive version bump, tag, and push
 ```
 
 ## License

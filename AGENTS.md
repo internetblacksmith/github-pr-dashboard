@@ -10,6 +10,8 @@ make lint       # Run ESLint
 make build      # Create distributable zip
 make ci         # Run lint + test + build (mirrors CI pipeline)
 make install    # Install dev dependencies
+make demo       # Build demo extension for screenshots
+make release    # Interactive version bump, tag, and push
 ```
 
 ## Critical Rules

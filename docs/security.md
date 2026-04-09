@@ -12,8 +12,8 @@ The GitHub PAT is stored in `chrome.storage.local` — the standard approach use
 
 - Extension only requests `storage` permission
 - No `tabs`, `history`, `cookies`, or broad host permissions
-- CSP restricts network to `https://api.github.com` only
-- GitHub token should use fine-grained PAT with read-only PR/Issues access
+- Network restricted to `https://api.github.com/*` via `host_permissions`
+- Token should be a classic PAT with `repo` scope — the setup screen links directly to the creation URL with the scope pre-filled
 
 ## Content Security Policy
 
