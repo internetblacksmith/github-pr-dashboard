@@ -102,7 +102,8 @@ make lint       # Run ESLint
 make build      # Create distributable zip
 make ci         # All of the above
 make demo       # Build demo extension for screenshots
-make release    # Interactive version bump, tag, and push
+make release    # Bump version and create PR
+make tag        # Tag merged release and push
 ```
 
 ## License

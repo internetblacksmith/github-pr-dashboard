@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - run: npm ci
+
+      - name: Lint
+        run: npx eslint *.js
+
+      - name: Test
+        run: npm test
+
+      - name: Build Chrome zip
+        run: make build
+
+      - name: Build Firefox xpi
+        run: |
+          npx web-ext build --source-dir=. --artifacts-dir=. \
+            --ignore-files="node_modules/*" "test/*" "demo/*" "*.svg" \
+            "package*.json" "eslint.config.*" ".github/*" "AGENTS.md" \
+            "CLAUDE.md" "CHANGELOG.md" "PRIVACY.md" "README.md" ".gitignore" \
+            ".node-version" "docs/*" "Makefile"
+          mv github_pr_dashboard-*.zip github-pr-dashboard-firefox-unsigned.xpi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            github-pr-dashboard-chrome.zip
+            github-pr-dashboard-firefox-unsigned.xpi
+          generate_release_notes: true
+          append_body: true
+          body: |
+            ## Install
+
+            | Browser | File | Notes |
+            |---------|------|-------|
+            | Chrome | `github-pr-dashboard-chrome.zip` | Unzip, then Load unpacked in `chrome://extensions` |
+            | Firefox | `github-pr-dashboard-firefox-unsigned.xpi` | **Unsigned** — works as a temporary add-on only (removed on browser close). For a persistent install, use the signed version from [addons.mozilla.org](https://addons.mozilla.org) when available. |
