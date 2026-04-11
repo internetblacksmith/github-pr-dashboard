@@ -6,7 +6,6 @@
 - Add accessibility: ARIA labels, focus trap, keyboard nav, focus-visible outlines
 - Add logout confirmation modal (replaces double-click, works in Firefox)
 - Improve error messages for 401 and permission errors
-- Add password manager autofill support on setup input
 - Add `make release` with interactive version bump menu
 - Add `make demo` for screenshot-ready extension builds with mock data
 - Add privacy policy (PRIVACY.md)
