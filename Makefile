@@ -1,4 +1,5 @@
 .DEFAULT_GOAL := menu
+export VERSION
 .PHONY: menu install test lint ci build demo release tag help list
 
 # Colors
@@ -31,7 +32,7 @@ menu:
 	@printf "   $(YELLOW)5)$(RESET)  make ci                $(DIM)Run lint + test + build (CI pipeline)$(RESET)\n"
 	@printf "\n"
 	@printf "  $(BOLD)$(GREEN)=== Release ===$(RESET)\n"
-	@printf "   $(YELLOW)6)$(RESET)  make release           $(DIM)Bump version and create PR$(RESET)\n"
+	@printf "   $(YELLOW)6)$(RESET)  make release           $(DIM)Bump version, date changelog, open PR$(RESET)\n"
 	@printf "   $(YELLOW)7)$(RESET)  make tag               $(DIM)Tag merged release and push$(RESET)\n"
 	@printf "   $(YELLOW)8)$(RESET)  make demo              $(DIM)Build demo extension for screenshots$(RESET)\n"
 	@printf "\n"
@@ -99,6 +100,7 @@ release:
 		*) echo "Aborted."; exit 1 ;; \
 	esac; \
 	if [ -z "$$VERSION" ]; then echo "Aborted."; exit 1; fi; \
+	if ! echo "$$VERSION" | grep -Exq '[0-9]+\.[0-9]+\.[0-9]+'; then echo "Invalid version: $$VERSION (expected x.y.z)"; exit 1; fi; \
 	printf "\n$(BOLD)Releasing $(CYAN)v$$VERSION$(RESET)\n\n"; \
 	BRANCH="release/v$$VERSION"; \
 	git checkout main; \
@@ -107,21 +109,30 @@ release:
 	git checkout -b "$$BRANCH"; \
 	node -e "var p=require('./package.json');p.version='$$VERSION';require('fs').writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"; \
 	sed -i 's/"version": ".*"/"version": "'"$$VERSION"'"/' manifest.json; \
+	if grep -q "^## Unreleased" CHANGELOG.md; then \
+		sed -i "s/^## Unreleased$$/## Unreleased\n\n## $$VERSION - $$(date +%Y-%m-%d)/" CHANGELOG.md; \
+	fi; \
 	$(MAKE) ci; \
-	git add package.json manifest.json; \
+	git add package.json manifest.json CHANGELOG.md; \
 	git commit -m "Release v$$VERSION"; \
 	git push -u origin "$$BRANCH"; \
 	gh pr create --title "Release v$$VERSION" --body "Bump version to $$VERSION" --base main; \
 	printf "\n$(BOLD)$(GREEN)PR created for v$$VERSION$(RESET)\n"; \
 	printf "  After merging, run: $(CYAN)make tag VERSION=$$VERSION$(RESET)\n\n"
 
+# VERSION is read from the environment ($$VERSION), never expanded into the
+# recipe text, so an odd value can't be interpreted by the shell.
 tag:
-	@if [ -z "$(VERSION)" ]; then echo "Usage: make tag VERSION=x.y.z"; exit 1; fi
-	@git checkout main
-	@git pull --ff-only origin main
-	@git tag "v$(VERSION)"
-	@git push origin "v$(VERSION)"
-	@printf "\n$(BOLD)$(GREEN)Tagged v$(VERSION) — GitHub Actions will create the release.$(RESET)\n"
+	@case "$$VERSION" in \
+		"") echo "Usage: make tag VERSION=x.y.z"; exit 1 ;; \
+		*[!0-9.]*) echo "Invalid version (expected x.y.z)"; exit 1 ;; \
+	esac; \
+	echo "$$VERSION" | grep -Exq '[0-9]+\.[0-9]+\.[0-9]+' || { echo "Invalid version: $$VERSION (expected x.y.z)"; exit 1; }; \
+	git checkout main; \
+	git pull --ff-only origin main; \
+	git tag "v$$VERSION"; \
+	git push origin "v$$VERSION"; \
+	printf "\n$(BOLD)$(GREEN)Tagged v$$VERSION — GitHub Actions will create the release.$(RESET)\n"
 
 help:
 	@printf "\n"
@@ -132,7 +143,7 @@ help:
 	@printf "  $(CYAN)make build$(RESET)             Create distributable zip\n"
 	@printf "  $(CYAN)make install$(RESET)           Install dev dependencies\n"
 	@printf "  $(CYAN)make ci$(RESET)                Run lint + test + build\n"
-	@printf "  $(CYAN)make release$(RESET)           Bump version and create PR\n"
+	@printf "  $(CYAN)make release$(RESET)           Bump version, date changelog, open PR\n"
 	@printf "  $(CYAN)make tag$(RESET)               Tag merged release and push\n"
 	@printf "  $(CYAN)make demo$(RESET)              Build demo extension for screenshots\n"
 	@printf "\n"

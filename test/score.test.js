@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { loadSource } from "./helpers.js";
 
 var github;
@@ -155,3 +155,153 @@ describe("scorePr", function () {
   });
 });
 
+
+describe("isReviewPending", function () {
+  it("is pending when the user is explicitly requested, even after a prior review", function () {
+    var pr = makePr({
+      reviews: { nodes: [{ author: { login: "testuser" } }] },
+      reviewRequests: { nodes: [{ requestedReviewer: { login: "testuser" } }] },
+    });
+    expect(score.isReviewPending(pr, "testuser")).toBe(true);
+  });
+
+  it("is pending when no review has been submitted (team request)", function () {
+    var pr = makePr({ reviews: { nodes: [] }, reviewRequests: { nodes: [{ requestedReviewer: {} }] } });
+    expect(score.isReviewPending(pr, "testuser")).toBe(true);
+  });
+
+  it("is not pending when only a team is requested and the user already reviewed", function () {
+    var pr = makePr({
+      reviews: { nodes: [{ author: { login: "testuser" } }] },
+      reviewRequests: { nodes: [{ requestedReviewer: {} }] },
+    });
+    expect(score.isReviewPending(pr, "testuser")).toBe(false);
+  });
+
+  it("handles missing reviewRequests", function () {
+    expect(score.isReviewPending(makePr({ reviewRequests: null }), "testuser")).toBe(true);
+    expect(score.isReviewPending(makePr({}), "testuser")).toBe(true);
+  });
+});
+
+describe("scorePr re-requested reviews", function () {
+  it("scores +25 when the user is re-requested after reviewing", function () {
+    var pr = makePr({
+      reviews: { nodes: [{ author: { login: "testuser" } }] },
+      reviewRequests: { nodes: [{ requestedReviewer: { login: "testuser" } }] },
+    });
+    var result = score.scorePr(pr, "testuser", "review-requested");
+    expect(result.score).toBe(25);
+    expect(result.reason).toContain("reasonReviewPending");
+  });
+});
+
+describe("hasAnyApproval", function () {
+  it("is true from reviewDecision", function () {
+    expect(score.hasAnyApproval(makePr({ reviewDecision: "APPROVED" }))).toBe(true);
+  });
+
+  it("is true from any APPROVED review, even without reviewDecision", function () {
+    var pr = makePr({ reviewDecision: null, reviews: { nodes: [{ author: { login: "other" }, state: "APPROVED" }] } });
+    expect(score.hasAnyApproval(pr)).toBe(true);
+  });
+
+  it("ignores comments, dismissed reviews and change requests", function () {
+    var pr = makePr({ reviews: { nodes: [
+      { author: { login: "a" }, state: "COMMENTED" },
+      { author: { login: "b" }, state: "DISMISSED" },
+      { author: { login: "c" }, state: "CHANGES_REQUESTED" },
+    ] } });
+    expect(score.hasAnyApproval(pr)).toBe(false);
+  });
+
+  it("handles missing reviews", function () {
+    expect(score.hasAnyApproval(makePr({ reviews: null }))).toBe(false);
+  });
+});
+
+describe("scorePr one-approval rule", function () {
+  it("gives no pending bonus when someone else already approved", function () {
+    var pr = makePr({ reviews: { nodes: [{ author: { login: "other" }, state: "APPROVED" }] } });
+    var result = score.scorePr(pr, "testuser", "review-requested");
+    expect(result.score).toBe(0);
+    expect(result.needsReview).toBe(false);
+    expect(result.reason).not.toContain("reasonReviewPending");
+  });
+
+  it("flags needsReview when nobody approved and you haven't reviewed", function () {
+    var result = score.scorePr(makePr({}), "testuser", "review-requested");
+    expect(result.needsReview).toBe(true);
+    expect(result.score).toBe(25);
+  });
+
+  it("does not flag needsReview when you already reviewed", function () {
+    var pr = makePr({ reviews: { nodes: [{ author: { login: "testuser" }, state: "COMMENTED" }] } });
+    expect(score.scorePr(pr, "testuser", "review-requested").needsReview).toBe(false);
+  });
+
+  it("re-request wins over your own earlier comment when nobody approved", function () {
+    var pr = makePr({
+      reviews: { nodes: [{ author: { login: "testuser" }, state: "COMMENTED" }] },
+      reviewRequests: { nodes: [{ requestedReviewer: { login: "testuser" } }] },
+    });
+    expect(score.scorePr(pr, "testuser", "review-requested").needsReview).toBe(true);
+  });
+
+  it("never flags needsReview outside the review-requested column", function () {
+    expect(score.scorePr(makePr({}), "testuser", "authored").needsReview).toBe(false);
+  });
+});
+
+describe("teammates' PRs and tiers", function () {
+  it("scores +15 with the team reason and tier 2 for a teammate PR nobody approved", function () {
+    var pr = makePr({ source: "teammates", author: { login: "pal", avatarUrl: "" } });
+    var result = score.scorePr(pr, "testuser", "review-requested");
+    expect(result.score).toBe(15);
+    expect(result.reason).toContain("reasonTeamReview");
+    expect(result.needsReview).toBe(true);
+    expect(result.tier).toBe(2);
+  });
+
+  it("puts a requested PR that needs you in tier 1 with +25", function () {
+    var result = score.scorePr(makePr({ source: "requested" }), "testuser", "review-requested");
+    expect(result.tier).toBe(1);
+    expect(result.score).toBe(25);
+  });
+
+  it("defaults to the requested weight when source is absent", function () {
+    var result = score.scorePr(makePr({}), "testuser", "review-requested");
+    expect(result.tier).toBe(1);
+    expect(result.score).toBe(25);
+  });
+
+  it("settles a teammate PR once anyone approves or you reviewed", function () {
+    var approved = makePr({ source: "teammates", reviews: { nodes: [{ author: { login: "x" }, state: "APPROVED" }] } });
+    expect(score.scorePr(approved, "testuser", "review-requested").tier).toBe(3);
+    var reviewed = makePr({ source: "teammates", reviews: { nodes: [{ author: { login: "testuser" }, state: "COMMENTED" }] } });
+    expect(score.scorePr(reviewed, "testuser", "review-requested").tier).toBe(3);
+  });
+
+  it("never marks a draft as needing review, whatever the source", function () {
+    var requestedDraft = score.scorePr(makePr({ isDraft: true }), "testuser", "review-requested");
+    expect(requestedDraft.needsReview).toBe(false);
+    expect(requestedDraft.tier).toBe(3);
+    expect(requestedDraft.score).toBe(0);
+    var teamDraft = score.scorePr(makePr({ isDraft: true, source: "teammates" }), "testuser", "review-requested");
+    expect(teamDraft.tier).toBe(3);
+  });
+
+  it("tier is 3 outside the review-requested column and for null", function () {
+    expect(score.scorePr(makePr({}), "testuser", "authored").tier).toBe(3);
+    expect(score.scorePr(null, "testuser", "authored").tier).toBe(3);
+  });
+});
+
+describe("isDirectlyRequested", function () {
+  it("finds the user by login in outstanding requests", function () {
+    var pr = makePr({ reviewRequests: { nodes: [{ requestedReviewer: {} }, { requestedReviewer: { login: "testuser" } }] } });
+    expect(score.isDirectlyRequested(pr, "testuser")).toBe(true);
+    expect(score.isDirectlyRequested(pr, "other")).toBe(false);
+    expect(score.isDirectlyRequested(makePr({}), "testuser")).toBe(false);
+  });
+});

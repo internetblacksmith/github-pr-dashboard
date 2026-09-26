@@ -15,7 +15,7 @@ Replace your new tab with a GitHub PR dashboard. See review requests, your PRs, 
 
 Every new tab shows your GitHub pull requests in three columns:
 
-- Review Requested — PRs where someone asked for your review
+- Review Requested — PRs where someone asked for your review, plus your teammates’ open PRs, grouped into needs your review / team needs a review / settled
 - Your PRs — PRs you opened, with review status and diff stats
 - Personal Projects — all open PRs across your repos and configured orgs
 
@@ -24,11 +24,12 @@ Each PR gets an attention score (0-100) based on urgency: unresponded reviewer f
 Features:
 
 - Attention scoring — PRs ranked by urgency, not just recency
+- Teammates — list the people you review for and their un-reviewed PRs surface even when nobody asked you
 - Org filtering — toggle visibility by organisation when PRs span multiple orgs
 - Org grouping — PRs grouped by org with drag-to-reorder in settings
 - Customisable org colours — auto-assigned from org name, fully overridable
 - Light, dark, and system themes
-- 10-minute cache — fast new tabs without hammering the API
+- Instant new tabs — cached dashboard shows immediately and refreshes in the background
 - Works offline after install — no external CDN dependencies
 - Cross-browser — Chrome and Firefox
 - Available in English, Italian, and Polish
@@ -37,8 +38,8 @@ Privacy:
 
 - Your GitHub token stays on your device (chrome.storage.local, never synced)
 - Only permission requested is storage — no tabs, history, or cookies access
-- Network restricted to api.github.com via host permissions
-- Classic personal access token with `repo` scope is all you need — the setup screen links directly to the token creator with the scope pre-filled
+- Only talks to api.github.com — no analytics, no third-party requests
+- Classic personal access token with `repo` scope is all you need — the setup screen links directly to the token creator with the scope pre-filled (`public_repo` works if you only need public repositories)
 
 Setup takes 30 seconds: create a GitHub token with `repo` scope (link pre-filled), paste it on the first new tab, done.
 

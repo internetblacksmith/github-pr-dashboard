@@ -35,6 +35,9 @@
   "setupTokenStep2": {
     "message": "Paste it below"
   },
+  "setupTokenScopeNote": {
+    "message": "The repo scope also grants write access to your repositories — GitHub has no read-only classic scope. If you only need public repos, tick public_repo instead."
+  },
   "setupTokenLabel": {
     "message": "GitHub Token"
   },
@@ -81,7 +84,7 @@
     "message": "Personal Projects"
   },
   "helpReviewRequested": {
-    "message": "Open PRs where someone requested your review. Sorted by urgency — unstarted reviews and older PRs float to the top."
+    "message": "Open PRs where someone requested your review, plus your teammates’ open PRs. Three groups, top to bottom: PRs that need your review, teammates’ PRs nobody has approved yet, and everything already settled (one approval is enough). Sorted by urgency within each group."
   },
   "helpYourPrs": {
     "message": "PRs you authored. Unresponded reviewer feedback and changes requested are surfaced first. Draft PRs are scored lower."
@@ -101,6 +104,9 @@
       }
     }
   },
+  "refreshing": {
+    "message": "Refreshing..."
+  },
   "filterAll": {
     "message": "All"
   },
@@ -109,6 +115,18 @@
   },
   "tooltipClose": {
     "message": "Close"
+  },
+  "settingsSectionsAria": {
+    "message": "Settings sections"
+  },
+  "settingsSectionOrgs": {
+    "message": "Organisations"
+  },
+  "settingsSectionTeammates": {
+    "message": "Teammates"
+  },
+  "settingsSectionAppearance": {
+    "message": "Appearance"
   },
   "settingsOrgLabel": {
     "message": "Personal organisations"
@@ -124,6 +142,57 @@
   },
   "settingsOrgColorsHint": {
     "message": "Customise badge colours for orgs that appear on your dashboard."
+  },
+  "settingsTeammatesLabel": {
+    "message": "Teammates"
+  },
+  "settingsTeammatesHint": {
+    "message": "GitHub usernames of the people you review for. Their open PRs show up in Review Requested even when nobody asked you, so you can jump in on anything that is waiting."
+  },
+  "settingsAddTeammate": {
+    "message": "+ Add teammate"
+  },
+  "teammatePlaceholder": {
+    "message": "github-username"
+  },
+  "tooltipRemoveTeammate": {
+    "message": "Remove teammate"
+  },
+  "teammateInvalid": {
+    "message": "Not a valid GitHub username: $LOGINS$",
+    "placeholders": {
+      "logins": {
+        "content": "$1",
+        "example": "octo cat"
+      }
+    }
+  },
+  "settingsTeammateOrgsLabel": {
+    "message": "Only in these organisations"
+  },
+  "settingsTeammateOrgsHint": {
+    "message": "Limit teammates’ PRs to your company’s GitHub organisations, so their personal projects stay out of the column. Leave empty to show PRs from any repository."
+  },
+  "settingsAddTeammateOrg": {
+    "message": "+ Add organisation"
+  },
+  "teammateOrgInvalid": {
+    "message": "Not a valid GitHub organisation name: $NAMES$",
+    "placeholders": {
+      "names": {
+        "content": "$1",
+        "example": "acme corp"
+      }
+    }
+  },
+  "tierNeedsYou": {
+    "message": "Needs your review"
+  },
+  "tierTeamNeeds": {
+    "message": "Team needs a review"
+  },
+  "tierSettled": {
+    "message": "Settled"
   },
   "settingsThemeLabel": {
     "message": "Theme"
@@ -174,7 +243,7 @@
     "message": "Setup failed. Check the console for details."
   },
   "tokenScopes": {
-    "message": "Token doesn\u2019t have the right permissions. Make sure Repository access is set to \u201cAll repositories\u201d and Pull requests permission is \u201cRead\u201d."
+    "message": "Token doesn\u2019t have the right permissions. Create a classic token with the repo scope (or public_repo for public repositories only)."
   },
   "errorGitHub": {
     "message": "GitHub is having issues right now. Hit refresh to try again, or just open a new tab in a bit."
@@ -189,7 +258,7 @@
     "message": "Can\u2019t reach GitHub. Check your internet connection and try again."
   },
   "errorScopes": {
-    "message": "Your token doesn\u2019t have enough permissions. Try clearing it (logout button) and creating a new one with \u201cAll repositories\u201d access and Pull requests (read) permission."
+    "message": "Your token doesn\u2019t have enough permissions. Try clearing it (logout button) and creating a new classic token with the repo scope."
   },
   "errorGeneric": {
     "message": "Something went wrong loading your PRs. Hit refresh to try again."
@@ -218,6 +287,9 @@
   "reasonReviewPending": {
     "message": "review pending"
   },
+  "reasonTeamReview": {
+    "message": "team review needed"
+  },
   "reasonDaysStale": {
     "message": "$COUNT$d stale",
     "placeholders": {
@@ -238,6 +310,12 @@
   },
   "statusReviewNeeded": {
     "message": "Review needed"
+  },
+  "statusNeedsYourReview": {
+    "message": "Needs your review"
+  },
+  "statusTeamReviewNeeded": {
+    "message": "Team review needed"
   },
   "statusDraft": {
     "message": "Draft"

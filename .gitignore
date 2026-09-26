@@ -2,3 +2,5 @@ node_modules/
 *.zip
 .DS_Store
 demo-build/
+.gstack/
+.gstack/

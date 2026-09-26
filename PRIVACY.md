@@ -13,16 +13,16 @@ Your GitHub Personal Access Token is stored locally on your device using `chrome
 - **Never synced** to any cloud service (we use `local`, not `sync` storage)
 - **Never transmitted** anywhere except directly to the GitHub API (`api.github.com`)
 - **Never shared** with other extensions, websites, or third parties
-- **Deleted immediately** when you log out via the extension
+- **Deleted immediately** when you log out via the extension, together with the cached dashboard data
 
 ## Network Requests
 
-The extension makes requests only to `https://api.github.com` to fetch your pull request data. This is enforced by the Content Security Policy declared in the extension manifest. No other network requests are made.
+The extension makes API requests only to `https://api.github.com` to fetch your pull request data. The only other network activity is loading avatar images from GitHub (`*.githubusercontent.com`), which happens as ordinary `<img>` loads and never carries your token. The API endpoint is hard-coded in the extension source; no other hosts are contacted.
 
 ## Permissions
 
 - **storage** — to save your token, preferences, and cached dashboard data locally
-- **host_permissions (api.github.com)** — to fetch PR data from the GitHub GraphQL API
+- **host_permissions (api.github.com)** — to fetch PR data from the GitHub GraphQL API. Note that this grants access to that host; the restriction to GitHub only is enforced by the extension code, not by the browser
 
 No other permissions are requested. The extension cannot access your browsing history, tabs, cookies, or any other browser data.
 

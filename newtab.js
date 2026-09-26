@@ -19,6 +19,10 @@ var api = isFirefox ? browser : chrome;
 
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
+// Hosts that PR links and avatars may point to. Everything comes from the
+// GitHub API over TLS, so this is defence in depth, not a live threat.
+const SAFE_URL_HOSTS = /^(github\.com|[a-z0-9-]+\.githubusercontent\.com)$/;
+
 // DOM references
 const setupScreen = document.getElementById("setup-screen");
 const dashboard = document.getElementById("dashboard");
@@ -127,6 +131,23 @@ function getPersonalOrgNames(orgConfig) {
   return orgConfig.map(function (o) { return o.name.toLowerCase(); });
 }
 
+// Company teammates (GitHub logins), not a GitHub team. Their open PRs join
+// the Review Requested column so nobody's work sits unreviewed.
+async function getTeammates() {
+  return getStoredNames("teammates");
+}
+
+// Organisations teammates' PRs are limited to (empty = any repo they own or work in)
+async function getTeammateOrgs() {
+  return getStoredNames("teammateOrgs");
+}
+
+async function getStoredNames(key) {
+  var raw = await getStored(key);
+  if (!raw || !Array.isArray(raw)) return [];
+  return raw.filter(function (l) { return typeof l === "string"; });
+}
+
 // --- Org colours ---
 
 function hashOrgColor(name) {
@@ -227,6 +248,8 @@ function setupSetupForm() {
 
     try {
       var username = await fetchUsername(token);
+      // Drop any cache left by a previous account before storing the new identity
+      await storageRemove(["dashboardCache", "dashboardCacheTime"]);
       await storageSet({ githubToken: token, githubUsername: username });
 
       showScreen(dashboard);
@@ -252,8 +275,8 @@ function setupSetupForm() {
 
 function setupHeaderButtons(token) {
   document.getElementById("refresh-btn").onclick = async function () {
-    await storageRemove(["dashboardCache", "dashboardCacheTime"]);
-    await loadDashboard(token);
+    // Keep the current cards on screen while fresh data loads
+    await loadDashboard(token, true);
   };
 
   document.getElementById("settings-btn").onclick = function () { openSettings(); };
@@ -266,13 +289,33 @@ function setupHeaderButtons(token) {
     if (e.key === "Escape" && !settingsModal.hidden) closeSettings();
   };
   setupThemePicker();
+  setupSettingsNav();
 
   document.getElementById("add-org-btn").onclick = function () {
     addOrgRow({ name: "", color: DEFAULT_COLORS[document.querySelectorAll(".org-row").length % DEFAULT_COLORS.length] }, "");
   };
 
+  document.getElementById("add-teammate-btn").onclick = function () {
+    addNameRow("teammate-list", "", "teammatePlaceholder", "tooltipRemoveTeammate");
+    focusLastInput("teammate-list");
+  };
+  document.getElementById("add-teammate-org-btn").onclick = function () {
+    addNameRow("teammate-org-list", "", "orgPlaceholder", "tooltipRemoveOrg");
+    focusLastInput("teammate-org-list");
+  };
+
   document.getElementById("settings-save").onclick = async function () {
+    // Invalid names block the save so nothing odd reaches the search query
+    var teammates = collectTeammates();
+    var teammateOrgs = collectTeammateOrgs();
+    if (teammates === null || teammateOrgs === null) {
+      showSettingsSection("teammates");
+      return;
+    }
+
     var oldOrgs = await getOrgConfig();
+    var oldTeammates = await getTeammates();
+    var oldTeammateOrgs = await getTeammateOrgs();
     var orgs = collectOrgConfig();
     var orgColors = {};
     document.querySelectorAll(".org-color-override").forEach(function (input) {
@@ -280,12 +323,12 @@ function setupHeaderButtons(token) {
     });
     var activeTheme = document.querySelector(".theme-option.active");
     var theme = activeTheme ? activeTheme.dataset.theme : "system";
-    await storageSet({ orgs: orgs, orgColors: orgColors, theme: theme });
+    await storageSet({ orgs: orgs, orgColors: orgColors, theme: theme, teammates: teammates, teammateOrgs: teammateOrgs });
     closeSettings();
 
-    // Only re-fetch if the org names changed; color/theme changes just re-render
-    var oldNames = oldOrgs.map(function (o) { return o.name; }).join(",");
-    var newNames = orgs.map(function (o) { return o.name; }).join(",");
+    // Only re-fetch if the queried names changed; color/theme changes just re-render
+    var oldNames = oldOrgs.map(function (o) { return o.name; }).join(",") + "|" + oldTeammates.join(",") + "|" + oldTeammateOrgs.join(",");
+    var newNames = orgs.map(function (o) { return o.name; }).join(",") + "|" + teammates.join(",") + "|" + teammateOrgs.join(",");
     if (oldNames !== newNames) {
       await storageRemove(["dashboardCache", "dashboardCacheTime"]);
     }
@@ -305,10 +348,73 @@ function setupHeaderButtons(token) {
   };
   document.getElementById("logout-confirm").onclick = async function () {
     logoutModal.hidden = true;
-    await storageRemove(["githubToken", "githubUsername", "orgs", "orgColors", "theme", "dashboardCache", "dashboardCacheTime"]);
+    await storageRemove(["githubToken", "githubUsername", "orgs", "orgColors", "theme", "teammates", "teammateOrgs", "dashboardCache", "dashboardCacheTime"]);
+    clearDashboardDom();
     showScreen(setupScreen);
     setupSetupForm();
   };
+}
+
+// Wipe rendered PR data so nothing from the previous account stays on screen
+function clearDashboardDom() {
+  ["review-requested", "authored", "personal"].forEach(function (id) {
+    document.getElementById("list-" + id).innerHTML = "";
+    document.getElementById("count-" + id).textContent = "";
+    document.getElementById("section-" + id).hidden = true;
+  });
+  var filters = document.getElementById("org-filters");
+  filters.innerHTML = "";
+  filters.hidden = true;
+  document.getElementById("pr-columns").hidden = true;
+  document.getElementById("empty-state").hidden = true;
+  document.getElementById("last-updated").textContent = "";
+  var badge = document.getElementById("username-badge");
+  badge.textContent = "";
+  badge.hidden = true;
+  errorBanner.hidden = true;
+}
+
+// A logout in any tab (including this one) reloads every open dashboard tab,
+// which also kills any background refresh that could write stale data back.
+function watchForLogout() {
+  if (!api.storage || !api.storage.onChanged) return;
+  api.storage.onChanged.addListener(function (changes, area) {
+    if (area === "local" && changes.githubToken && !changes.githubToken.newValue) {
+      location.reload();
+    }
+  });
+}
+
+// --- Settings sections ---
+
+function setupSettingsNav() {
+  var nav = settingsModal.querySelector(".settings-nav");
+  if (!nav) return;
+  nav.onclick = function (e) {
+    var item = e.target.closest(".settings-nav-item");
+    if (item) showSettingsSection(item.dataset.section);
+  };
+}
+
+function showSettingsSection(name) {
+  settingsModal.querySelectorAll(".settings-nav-item").forEach(function (item) {
+    var active = item.dataset.section === name;
+    item.classList.toggle("active", active);
+    if (active) item.setAttribute("aria-current", "true");
+    else item.removeAttribute("aria-current");
+  });
+  settingsModal.querySelectorAll(".settings-pane").forEach(function (pane) {
+    pane.hidden = pane.dataset.section !== name;
+  });
+  var panes = settingsModal.querySelector(".settings-panes");
+  if (panes) panes.scrollTop = 0;
+}
+
+// Focus trap helper: hidden panes still hold inputs, skip anything not reachable
+function isFocusable(el) {
+  if (!el || el.disabled) return false;
+  if (typeof el.closest === "function" && el.closest("[hidden]")) return false;
+  return true;
 }
 
 var settingsPreviousFocus = null;
@@ -334,18 +440,24 @@ async function openSettings() {
   }
 
   renderOrgList(orgConfig, username);
+  renderNameList("teammate-list", "teammate-error", await getTeammates(), "teammatePlaceholder", "tooltipRemoveTeammate");
+  renderNameList("teammate-org-list", "teammate-org-error", await getTeammateOrgs(), "orgPlaceholder", "tooltipRemoveOrg");
   await loadOrgColorPickers();
   await loadThemePicker();
+  showSettingsSection("orgs");
   settingsModal.hidden = false;
 
-  // Focus the first input inside the modal
-  var firstInput = settingsModal.querySelector("input, button:not(#settings-close)");
+  // Focus the first section in the nav
+  var firstInput = settingsModal.querySelector(".settings-nav-item, input, button:not(#settings-close)");
   if (firstInput) firstInput.focus();
 
   // Focus trap within the modal
   settingsModal.onkeydown = function (e) {
     if (e.key !== "Tab") return;
-    var focusable = settingsModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    var focusable = Array.prototype.filter.call(
+      settingsModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+      isFocusable
+    );
     if (focusable.length === 0) return;
     var first = focusable[0];
     var last = focusable[focusable.length - 1];
@@ -436,6 +548,77 @@ function addOrgRow(org, username) {
   list.appendChild(row);
 }
 
+// --- Name lists in settings (teammate logins, teammate orgs) ---
+// Simple text rows: no colour, no drag. Logins and org names share GitHub's
+// naming rules, so one validator covers both.
+
+function renderNameList(listId, errorId, names, placeholderKey, removeKey) {
+  var list = document.getElementById(listId);
+  list.innerHTML = "";
+  document.getElementById(errorId).hidden = true;
+  for (var i = 0; i < names.length; i++) {
+    addNameRow(listId, names[i], placeholderKey, removeKey);
+  }
+}
+
+function addNameRow(listId, value, placeholderKey, removeKey) {
+  var list = document.getElementById(listId);
+  var row = document.createElement("div");
+  row.className = "org-row teammate-row";
+  row.innerHTML = '<input type="text" class="teammate-input" value="' + escapeAttr(value) + '"'
+    + ' placeholder="' + escapeAttr(t(placeholderKey)) + '" autocomplete="off" spellcheck="false">'
+    + '<button type="button" class="org-delete-btn has-tooltip" data-tooltip="' + escapeAttr(t(removeKey)) + '">&times;</button>';
+  row.querySelector(".org-delete-btn").onclick = function () { row.remove(); };
+  list.appendChild(row);
+}
+
+function focusLastInput(listId) {
+  var inputs = document.getElementById(listId).querySelectorAll(".teammate-input");
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
+/**
+ * Reads the rows of a name list. Returns a deduplicated array of lowercase
+ * names, or null when any non-empty value is not a valid GitHub name (the
+ * offending inputs are marked and the error hint shown). Empty rows are ignored.
+ */
+function collectNames(listId, errorId, invalidKey) {
+  var list = document.getElementById(listId);
+  var errorEl = document.getElementById(errorId);
+  var names = [];
+  var seen = {};
+  var invalid = [];
+  list.querySelectorAll(".teammate-input").forEach(function (input) {
+    var name = input.value.trim().toLowerCase();
+    input.classList.toggle("invalid", false);
+    if (!name) return;
+    if (!isValidLogin(name)) {
+      invalid.push(name);
+      input.classList.toggle("invalid", true);
+      return;
+    }
+    if (!seen[name]) {
+      seen[name] = true;
+      names.push(name);
+    }
+  });
+  if (invalid.length > 0) {
+    errorEl.textContent = t(invalidKey, invalid.join(", "));
+    errorEl.hidden = false;
+    return null;
+  }
+  errorEl.hidden = true;
+  return names;
+}
+
+function collectTeammates() {
+  return collectNames("teammate-list", "teammate-error", "teammateInvalid");
+}
+
+function collectTeammateOrgs() {
+  return collectNames("teammate-org-list", "teammate-org-error", "teammateOrgInvalid");
+}
+
 function collectOrgConfig() {
   var list = document.getElementById("org-list");
   var rows = list.querySelectorAll(".org-row");
@@ -516,47 +699,96 @@ async function loadOrgColorPickers() {
 
 // --- Dashboard ---
 
-async function loadDashboard(token) {
+/**
+ * Stale-while-revalidate:
+ *   - cached data (any age) renders immediately
+ *   - fresh cache (< TTL) and no force → done
+ *   - stale cache, or forceRefresh → refetch in the background, cards stay visible
+ *   - no cache → spinner, then render
+ */
+async function loadDashboard(token, forceRefresh) {
   var columns = document.getElementById("pr-columns");
   var cached = await getCachedData();
   if (cached) {
-    await renderDashboard(cached);
+    await renderDashboard(cached.data, cached.time);
     columns.hidden = false;
     loading.hidden = true;
-    return;
+    if (cached.fresh && !forceRefresh) return;
   }
+  await refreshDashboard(token, !!cached);
+}
 
+// Only one fetch at a time per page — refresh clicks while loading are no-ops.
+// The promise is tied to its token so a login as a different account never
+// piggybacks on the previous account's fetch.
+var refreshInFlight = null;
+var refreshInFlightToken = null;
+
+function refreshDashboard(token, hasStaleData) {
+  if (refreshInFlight && refreshInFlightToken === token) return refreshInFlight;
+  refreshInFlightToken = token;
+  refreshInFlight = fetchAndRender(token, hasStaleData).finally(function () {
+    if (refreshInFlightToken === token) {
+      refreshInFlight = null;
+      refreshInFlightToken = null;
+    }
+  });
+  return refreshInFlight;
+}
+
+async function fetchAndRender(token, hasStaleData) {
+  var columns = document.getElementById("pr-columns");
   var loadingStatus = document.getElementById("loading-status");
-  columns.hidden = true;
-  document.getElementById("org-filters").hidden = true;
-  loading.hidden = false;
+  var lastUpdated = document.getElementById("last-updated");
   errorBanner.hidden = true;
-  loadingStatus.textContent = t("loadingStarting");
+
+  if (hasStaleData) {
+    lastUpdated.textContent = t("refreshing");
+  } else {
+    columns.hidden = true;
+    document.getElementById("org-filters").hidden = true;
+    loading.hidden = false;
+    loadingStatus.textContent = t("loadingStarting");
+  }
 
   try {
     var orgConfig = await getOrgConfig();
     var personalOrgNames = getPersonalOrgNames(orgConfig);
-    var data = await fetchDashboardData(token, personalOrgNames, function (msg) {
-      loadingStatus.textContent = msg;
+    var data = await fetchDashboardData(token, {
+      personalOrgs: personalOrgNames,
+      teammates: await getTeammates(),
+      teammateOrgs: await getTeammateOrgs(),
+    }, function (msg) {
+      if (!hasStaleData) loadingStatus.textContent = msg;
     });
-    loadingStatus.textContent = t("loadingRendering");
-    await cacheData(data);
-    await renderDashboard(data);
+
+    // User logged out while we were fetching — don't resurrect their data
+    if ((await getStored("githubToken")) !== token) return;
+
+    if (!hasStaleData) loadingStatus.textContent = t("loadingRendering");
+    var fetchedAt = Date.now();
+    await cacheData(data, fetchedAt);
+    await renderDashboard(data, fetchedAt);
     columns.hidden = false;
   } catch (err) {
     console.error("Dashboard load failed:", err);
     errorBanner.textContent = friendlyError(err);
     errorBanner.hidden = false;
+    if (hasStaleData) {
+      // Keep the stale cards and put the real timestamp back
+      var cached = await getCachedData();
+      if (cached) lastUpdated.textContent = t("updatedAt", formatTime(new Date(cached.time)));
+    }
   } finally {
     loading.hidden = true;
   }
 }
 
-async function renderDashboard(data) {
+async function renderDashboard(data, fetchedAt) {
   var badge = document.getElementById("username-badge");
   badge.textContent = "@" + data.username;
   badge.hidden = false;
-  document.getElementById("last-updated").textContent = t("updatedAt", formatTime(new Date()));
+  document.getElementById("last-updated").textContent = t("updatedAt", formatTime(new Date(fetchedAt || Date.now())));
 
   var username = data.username;
   await storageSet({ githubUsername: username });
@@ -571,14 +803,19 @@ async function renderDashboard(data) {
   var orgLookup = getOrgLookup(orgConfig);
   var orgColorOverrides = await getOrgColorOverrides();
 
+  // Review Requested = explicit requests + teammates' PRs nobody asked us about.
+  // A PR in both keeps the requested one; a teammate PR that names us under
+  // reviewRequests counts as requested even if the requested search overflowed.
+  var reviewItems = mergeReviewRequested(data.reviewRequested || [], data.teammatePrs || [], username);
+
   // Score and sort each column: by org order first, then by urgency
-  var reviewScored = scoreAndSort(data.reviewRequested || [], username, "review-requested", orgConfig);
+  var reviewScored = scoreAndSort(reviewItems, username, "review-requested", orgConfig);
   var authoredScored = scoreAndSort(data.authored || [], username, "authored", orgConfig);
 
-  // Personal PRs: deduplicate against authored and review-requested
+  // Personal PRs: deduplicate against everything already shown
   var seen = {};
   (data.authored || []).forEach(function (pr) { seen[pr.url] = true; });
-  (data.reviewRequested || []).forEach(function (pr) { seen[pr.url] = true; });
+  reviewItems.forEach(function (pr) { seen[pr.url] = true; });
   var uniquePersonal = (data.personalPrs || []).filter(function (pr) { return !seen[pr.url]; });
   var personalScored = scoreAndSort(uniquePersonal, username, "personal", orgConfig);
 
@@ -591,6 +828,25 @@ async function renderDashboard(data) {
 
   var isEmpty = reviewScored.length === 0 && authoredScored.length === 0 && personalScored.length === 0;
   document.getElementById("empty-state").hidden = !isEmpty;
+}
+
+function mergeReviewRequested(requested, teammatePrs, username) {
+  var seen = {};
+  var merged = [];
+  requested.forEach(function (pr) {
+    if (seen[pr.url]) return;
+    seen[pr.url] = true;
+    pr.source = "requested";
+    merged.push(pr);
+  });
+  teammatePrs.forEach(function (pr) {
+    if (seen[pr.url]) return;
+    if (pr.author && pr.author.login && pr.author.login.toLowerCase() === username.toLowerCase()) return;
+    seen[pr.url] = true;
+    pr.source = isDirectlyRequested(pr, username) ? "requested" : "teammates";
+    merged.push(pr);
+  });
+  return merged;
 }
 
 function scoreAndSort(prs, username, context, orgConfig) {
@@ -606,10 +862,13 @@ function scoreAndSort(prs, username, context, orgConfig) {
     var result = scorePr(prs[i], username, context);
     var owner = ((prs[i].repository && prs[i].repository.nameWithOwner) || "").split("/")[0].toLowerCase();
     var order = (owner in orgOrder) ? orgOrder[owner] : maxOrder;
-    scored.push({ pr: prs[i], score: result.score, reason: result.reason, context: context, orgOrder: order, orgName: owner });
+    scored.push({ pr: prs[i], score: result.score, reason: result.reason, needsReview: !!result.needsReview, tier: result.tier || 3, context: context, orgOrder: order, orgName: owner });
   }
-  // Sort by org order first, then alphabetically for unconfigured orgs, then by score
+  // Review Requested: tier first (needs you, team needs a review, settled).
+  // Then org order, then alphabetically for unconfigured orgs, then by score.
+  var byTier = context === "review-requested";
   scored.sort(function (a, b) {
+    if (byTier && a.tier !== b.tier) return a.tier - b.tier;
     if (a.orgOrder !== b.orgOrder) return a.orgOrder - b.orgOrder;
     if (a.orgOrder === maxOrder && a.orgName !== b.orgName) return a.orgName < b.orgName ? -1 : 1;
     return b.score - a.score;
@@ -637,8 +896,23 @@ function renderColumn(id, items, orgLookup, orgColorOverrides) {
     }
   }
 
+  // Review Requested only: tier headers when more than one tier is present.
+  // Org headers restart inside each tier.
+  var tiers = {};
+  if (id === "review-requested") {
+    for (var k = 0; k < items.length; k++) tiers[items[k].tier || 3] = true;
+  }
+  var hasMultipleTiers = Object.keys(tiers).length > 1;
+  var lastTier = null;
+
   lastOrg = null;
   for (var j = 0; j < items.length; j++) {
+    var tier = items[j].tier || 3;
+    if (hasMultipleTiers && tier !== lastTier) {
+      html += '<div class="tier-group-header" data-tier="' + tier + '">' + escapeHtml(tierLabel(tier)) + '</div>';
+      lastTier = tier;
+      lastOrg = null;
+    }
     var orgName = (items[j].pr.repository?.nameWithOwner ?? "").split("/")[0].toLowerCase();
     if (hasMultipleOrgs && orgName !== lastOrg) {
       var oc = getOrgColor(orgName, orgLookup, orgColorOverrides);
@@ -651,6 +925,12 @@ function renderColumn(id, items, orgLookup, orgColorOverrides) {
     html += renderScoredCard(items[j], orgLookup, orgColorOverrides);
   }
   list.innerHTML = html;
+}
+
+function tierLabel(tier) {
+  if (tier === 1) return t("tierNeedsYou");
+  if (tier === 2) return t("tierTeamNeeds");
+  return t("tierSettled");
 }
 
 function severityLevel(score) {
@@ -680,6 +960,21 @@ function renderScoredCard(item, orgLookup, orgColorOverrides) {
     statusText = t("statusChangesRequested");
   }
 
+  // Review Requested column: the badge speaks to *you*. A PR nobody has
+  // approved yet is highlighted; anything already settled is dimmed.
+  var settled = false;
+  if (item.context === "review-requested") {
+    if (item.needsReview && pr.source === "teammates") {
+      statusClass = "team-review";
+      statusText = t("statusTeamReviewNeeded");
+    } else if (item.needsReview) {
+      statusClass = "needs-review";
+      statusText = t("statusNeedsYourReview");
+    } else if (!pr.isDraft) {
+      settled = true;
+    }
+  }
+
   var orgName = repo.split("/")[0] || "";
 
   var safeUrl = isSafeUrl(pr.url) ? escapeAttr(pr.url) : "#";
@@ -696,7 +991,7 @@ function renderScoredCard(item, orgLookup, orgColorOverrides) {
 
   // -- Card --
   var severityLabel = severity === "high" ? t("severityHigh") : severity === "medium" ? t("severityMedium") : t("severityLow");
-  var html = '<div class="pr-card severity-' + severity + '" data-org="' + escapeAttr(orgName.toLowerCase()) + '">'
+  var html = '<div class="pr-card severity-' + severity + (settled ? " settled" : "") + '" data-org="' + escapeAttr(orgName.toLowerCase()) + '" data-tier="' + (item.tier || 3) + '">'
     + '<div class="severity-bar" aria-label="' + escapeAttr(severityLabel) + '"></div>'
     + '<div class="pr-card-inner">'
     +   tagsHtml
@@ -767,25 +1062,34 @@ function renderOrgFilters(orgs, orgLookup, orgColorOverrides) {
     var pill = e.target.closest(".org-filter-pill");
     if (!pill) return;
 
+    var allPill = container.querySelector('[data-filter="all"]');
+    var orgPills = container.querySelectorAll('.org-filter-pill:not([data-filter="all"])');
+
     if (pill.dataset.filter === "all") {
-      container.querySelectorAll(".org-filter-pill").forEach(function (p) {
-        p.classList.add("active");
-        p.setAttribute("aria-pressed", "true");
-      });
+      // "All" is a toggle: everything on → turn everything off, otherwise turn everything on
+      var activate = !allPillsActive(orgPills);
+      orgPills.forEach(function (p) { setPillActive(p, activate); });
+      setPillActive(allPill, activate);
     } else {
-      pill.classList.toggle("active");
-      pill.setAttribute("aria-pressed", pill.classList.contains("active") ? "true" : "false");
-      // Update "All" pill state
-      var allPill = container.querySelector('[data-filter="all"]');
-      var orgPills = container.querySelectorAll('.org-filter-pill:not([data-filter="all"])');
-      var allActive = true;
-      orgPills.forEach(function (p) { if (!p.classList.contains("active")) allActive = false; });
-      allPill.classList.toggle("active", allActive);
-      allPill.setAttribute("aria-pressed", allActive ? "true" : "false");
+      setPillActive(pill, !pill.classList.contains("active"));
+      // "All" reflects whether every org pill is on
+      setPillActive(allPill, allPillsActive(orgPills));
     }
 
     applyOrgFilter();
   };
+}
+
+function setPillActive(pill, active) {
+  pill.classList.toggle("active", active);
+  pill.setAttribute("aria-pressed", active ? "true" : "false");
+}
+
+// True when every org pill is active (an empty list counts as all active)
+function allPillsActive(pills) {
+  var all = true;
+  pills.forEach(function (p) { if (!p.classList.contains("active")) all = false; });
+  return all;
 }
 
 function applyOrgFilter() {
@@ -805,6 +1109,12 @@ function applyOrgFilter() {
     header.hidden = hasFilter ? !activeOrgs[header.dataset.org] : true;
   });
 
+  // Tier headers stay only while at least one of their cards is visible
+  document.querySelectorAll(".tier-group-header").forEach(function (header) {
+    var list = header.parentElement;
+    header.hidden = !list || !list.querySelector('.pr-card[data-tier="' + header.dataset.tier + '"]:not([hidden])');
+  });
+
   // Update counts and section visibility
   ["review-requested", "authored", "personal"].forEach(function (id) {
     var list = document.getElementById("list-" + id);
@@ -822,16 +1132,22 @@ function applyOrgFilter() {
 
 // --- Cache ---
 
+/**
+ * Returns { data, time, fresh } or null when nothing is cached.
+ * Stale entries are returned too — the caller decides whether to refresh.
+ * A cache written by a different account (username mismatch) is treated as absent.
+ */
 function getCachedData() {
-  return storageGet(["dashboardCache", "dashboardCacheTime"]).then(function (result) {
+  return storageGet(["dashboardCache", "dashboardCacheTime", "githubUsername"]).then(function (result) {
     if (!result.dashboardCache || !result.dashboardCacheTime) return null;
+    if (result.githubUsername && result.dashboardCache.username !== result.githubUsername) return null;
     var age = Date.now() - result.dashboardCacheTime;
-    return age < CACHE_TTL_MS ? result.dashboardCache : null;
+    return { data: result.dashboardCache, time: result.dashboardCacheTime, fresh: age < CACHE_TTL_MS };
   });
 }
 
-function cacheData(data) {
-  return storageSet({ dashboardCache: data, dashboardCacheTime: Date.now() });
+function cacheData(data, fetchedAt) {
+  return storageSet({ dashboardCache: data, dashboardCacheTime: fetchedAt || Date.now() });
 }
 
 // --- Utilities ---
@@ -881,12 +1197,14 @@ function formatTime(date) {
 function isSafeUrl(url) {
   try {
     var parsed = new URL(url);
-    return parsed.protocol === "https:" || parsed.protocol === "http:";
+    return parsed.protocol === "https:" && SAFE_URL_HOSTS.test(parsed.hostname);
   } catch (e) {
     return false;
   }
 }
 
+// Escapes the five HTML-significant characters. Safe for both text nodes and
+// double-quoted attribute values, so one function covers both uses.
 function escapeHtml(str) {
   if (typeof str !== "string") return "";
   return str
@@ -897,16 +1215,10 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
-function escapeAttr(str) {
-  if (typeof str !== "string") return "";
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
+// Kept as a named alias so call sites read as "this is an attribute value"
+var escapeAttr = escapeHtml;
 
 // --- Boot ---
 
+watchForLogout();
 init();

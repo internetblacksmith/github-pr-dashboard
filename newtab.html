@@ -51,6 +51,7 @@
         <li><a href="https://github.com/settings/tokens/new?description=GitHub%20PR%20Dashboard&scopes=repo" target="_blank" rel="noopener">Create a personal access token</a> with <code>repo</code> scope (link pre-fills it)</li>
         <li data-i18n="setupTokenStep2">Paste it below</li>
       </ol>
+      <p class="setup-scope-note" data-i18n="setupTokenScopeNote">The repo scope also grants write access to your repositories — GitHub has no read-only classic scope. If you only need public repos, tick public_repo instead.</p>
       <form id="setup-form" aria-label="GitHub token setup">
         <label for="setup-token" data-i18n="setupTokenLabel">GitHub Token</label>
         <input type="password" id="setup-token" data-i18n-placeholder="setupTokenPlaceholder" placeholder="ghp_..." autocomplete="off" autofocus>
@@ -141,7 +142,7 @@
 
   <!-- Settings modal -->
   <div id="settings-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
-    <div class="modal">
+    <div class="modal modal-settings">
       <div class="modal-header">
         <h2 id="settings-title" data-i18n="settingsTitle">Settings</h2>
         <button id="settings-close" class="icon-btn has-tooltip" data-i18n-tooltip="tooltipClose" data-tooltip="Close" aria-label="Close settings" data-i18n-aria="tooltipClose">
@@ -151,7 +152,14 @@
           </svg>
         </button>
       </div>
-      <div class="modal-body">
+      <div class="settings-layout">
+        <nav class="settings-nav" aria-label="Settings sections" data-i18n-aria="settingsSectionsAria">
+          <button type="button" class="settings-nav-item active" data-section="orgs" aria-current="true" data-i18n="settingsSectionOrgs">Organisations</button>
+          <button type="button" class="settings-nav-item" data-section="teammates" data-i18n="settingsSectionTeammates">Teammates</button>
+          <button type="button" class="settings-nav-item" data-section="appearance" data-i18n="settingsSectionAppearance">Appearance</button>
+        </nav>
+        <div class="settings-panes">
+        <section class="settings-pane" data-section="orgs">
         <label data-i18n="settingsOrgLabel">Personal organisations</label>
         <p class="field-hint" data-i18n="settingsOrgHint">Add orgs to see all their open PRs and control their sort order. Drag to reorder — PRs are grouped by org in this order. Work orgs don't need to be here — your authored and review-requested PRs show up automatically. Orgs not in this list appear last, sorted alphabetically.</p>
         <div id="org-list" class="org-list"></div>
@@ -160,7 +168,23 @@
         <label data-i18n="settingsOrgColorsLabel">Org colours</label>
         <p class="field-hint" data-i18n="settingsOrgColorsHint">Customise badge colours for orgs that appear on your dashboard.</p>
         <div id="org-color-list"></div>
+        </section>
 
+        <section class="settings-pane" data-section="teammates" hidden>
+        <label data-i18n="settingsTeammatesLabel">Teammates</label>
+        <p class="field-hint" data-i18n="settingsTeammatesHint">GitHub usernames of the people you review for. Their open PRs show up in Review Requested even when nobody asked you, so you can jump in on anything that is waiting.</p>
+        <div id="teammate-list" class="org-list"></div>
+        <p id="teammate-error" class="error" hidden></p>
+        <button type="button" id="add-teammate-btn" class="btn-add" data-i18n="settingsAddTeammate">+ Add teammate</button>
+
+        <label data-i18n="settingsTeammateOrgsLabel">Only in these organisations</label>
+        <p class="field-hint" data-i18n="settingsTeammateOrgsHint">Limit teammates’ PRs to your company’s GitHub organisations, so their personal projects stay out of the column. Leave empty to show PRs from any repository.</p>
+        <div id="teammate-org-list" class="org-list"></div>
+        <p id="teammate-org-error" class="error" hidden></p>
+        <button type="button" id="add-teammate-org-btn" class="btn-add" data-i18n="settingsAddTeammateOrg">+ Add organisation</button>
+        </section>
+
+        <section class="settings-pane" data-section="appearance" hidden>
         <label data-i18n="settingsThemeLabel">Theme</label>
         <div class="theme-picker" id="theme-picker">
           <button type="button" data-theme="system" class="theme-option active" title="System">
@@ -182,7 +206,10 @@
             <span data-i18n="themeDark">Dark</span>
           </button>
         </div>
-
+        </section>
+        </div>
+      </div>
+      <div class="modal-footer">
         <button id="settings-save" class="btn-primary" data-i18n="settingsSave">Save</button>
       </div>
     </div>

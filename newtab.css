@@ -217,6 +217,12 @@ a:hover {
   margin-bottom: 0;
 }
 
+.setup-scope-note {
+  color: var(--text-muted);
+  font-size: 11px;
+  margin: -4px 0 12px;
+}
+
 /* Forms */
 
 form label,
@@ -727,6 +733,55 @@ header {
   color: var(--text-secondary);
 }
 
+/* Review Requested column: still waiting on a review vs already settled */
+.status-badge.needs-review {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.status-badge.team-review {
+  background: var(--purple);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Review Requested tiers: needs you / team needs a review / settled */
+.tier-group-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 14px 0 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+}
+
+.tier-group-header:first-child {
+  padding-top: 0;
+  border-top: 0;
+  margin-top: 0;
+}
+
+.tier-group-header[hidden] {
+  display: none;
+}
+
+.teammate-input.invalid {
+  border-color: var(--red);
+}
+
+.pr-card.settled {
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+
+.pr-card.settled:hover,
+.pr-card.settled:focus-within {
+  opacity: 1;
+}
+
 .diff-stat {
   font-size: 11px;
   color: var(--text-muted);
@@ -779,6 +834,117 @@ header {
 
 .modal-body {
   padding: 20px 24px 24px;
+}
+
+/* Settings: fixed-height modal, section nav on the left, scrolling pane on the right */
+.modal-settings {
+  width: 720px;
+  max-width: 94vw;
+  height: min(80vh, 620px);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-settings .modal-header {
+  flex-shrink: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.settings-nav {
+  width: 168px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 8px;
+  border-right: 1px solid var(--border);
+}
+
+.settings-nav-item {
+  text-align: left;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.settings-nav-item:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.settings-nav-item.active {
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.settings-nav-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.settings-panes {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 20px 24px 24px;
+}
+
+.settings-pane[hidden] {
+  display: none;
+}
+
+.settings-pane > label {
+  margin-top: 20px;
+}
+
+.settings-pane > label:first-child {
+  margin-top: 0;
+}
+
+.modal-footer {
+  flex-shrink: 0;
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.modal-footer .btn-primary {
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  .modal-settings {
+    height: 92vh;
+  }
+
+  .settings-layout {
+    flex-direction: column;
+  }
+
+  .settings-nav {
+    width: auto;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .settings-nav-item {
+    white-space: nowrap;
+  }
 }
 
 .modal-sm {
