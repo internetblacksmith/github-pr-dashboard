@@ -48,4 +48,5 @@ script-src 'self'; object-src 'none'
 - Dev dependencies pinned to exact versions, installed with `npm ci` from the committed lockfile
 - `web-ext` (used to build the Firefox xpi) is a pinned dev dependency, run with `npx --no-install` so releases never fetch an unpinned package
 - GitHub Actions pinned to full commit SHAs; workflows run with `contents: read` and only the release job gets `contents: write`; checkout uses `persist-credentials: false`
-- Dependabot watches both npm and GitHub Actions weekly
+- Dependabot watches both npm and GitHub Actions weekly, grouped into one PR per ecosystem
+- Dependabot PRs for patch and minor updates are auto-merged once the required `build` check passes (`.github/workflows/dependabot-auto-merge.yml`); major updates wait for a human

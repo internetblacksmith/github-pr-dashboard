@@ -4,7 +4,14 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # One PR per week for all npm bumps instead of one PR per package
+    groups:
+      npm-dependencies:
+        patterns: ["*"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]

@@ -19,7 +19,7 @@
 - Pin `web-ext` as an exact dev dependency instead of fetching the latest at release time
 - Firefox xpi no longer packs empty `demo/`, `docs/`, `test/` folders or the SVG icon sources
 - Pin GitHub Actions to commit SHAs, add least-privilege `permissions`, disable credential persistence in checkout
-- Add Dependabot for npm and GitHub Actions
+- Add Dependabot for npm and GitHub Actions, grouped weekly, with auto-merge of patch and minor updates once CI passes
 - Validate the version string in `make release` and `make tag`
 - Bump ESLint and Vitest, resolve `npm audit` findings
 - Add tests for GraphQL retries and timeouts, personal PR dedup, column sorting, card rendering, cache freshness, and re-requested reviews
