@@ -32,8 +32,8 @@ menu:
 	@printf "   $(YELLOW)5)$(RESET)  make ci                $(DIM)Run lint + test + build (CI pipeline)$(RESET)\n"
 	@printf "\n"
 	@printf "  $(BOLD)$(GREEN)=== Release ===$(RESET)\n"
-	@printf "   $(YELLOW)6)$(RESET)  make release           $(DIM)Bump version, date changelog, open PR$(RESET)\n"
-	@printf "   $(YELLOW)7)$(RESET)  make tag               $(DIM)Tag merged release and push$(RESET)\n"
+	@printf "   $(YELLOW)6)$(RESET)  make release           $(DIM)Release: bump, changelog, PR, merge, tag$(RESET)\n"
+	@printf "   $(YELLOW)7)$(RESET)  make tag               $(DIM)Tag a merged release (fallback; release does this)$(RESET)\n"
 	@printf "   $(YELLOW)8)$(RESET)  make demo              $(DIM)Build demo extension for screenshots$(RESET)\n"
 	@printf "\n"
 	@read -p "  Enter choice: " choice; \
@@ -116,9 +116,17 @@ release:
 	git add package.json manifest.json CHANGELOG.md; \
 	git commit -m "Release v$$VERSION"; \
 	git push -u origin "$$BRANCH"; \
-	gh pr create --title "Release v$$VERSION" --body "Bump version to $$VERSION" --base main; \
-	printf "\n$(BOLD)$(GREEN)PR created for v$$VERSION$(RESET)\n"; \
-	printf "  After merging, run: $(CYAN)make tag VERSION=$$VERSION$(RESET)\n\n"
+	PR_URL=$$(gh pr create --title "Release v$$VERSION" --body "Bump version to $$VERSION" --base main); \
+	printf "\n$(BOLD)PR opened: $(CYAN)$$PR_URL$(RESET)\n"; \
+	gh pr merge --auto --merge "$$PR_URL"; \
+	printf "  Waiting for CI to merge it"; \
+	WAITED=0; \
+	until [ "$$(gh pr view "$$PR_URL" --json state -q .state)" = "MERGED" ]; do \
+		if [ $$WAITED -ge 600 ]; then printf "\n$(YELLOW)Still not merged after 10 minutes.$(RESET) Check the PR, then run: $(CYAN)make tag VERSION=$$VERSION$(RESET)\n"; exit 1; fi; \
+		sleep 10; WAITED=$$((WAITED + 10)); printf "."; \
+	done; \
+	printf " merged.\n"; \
+	$(MAKE) tag VERSION=$$VERSION
 
 # VERSION is read from the environment ($$VERSION), never expanded into the
 # recipe text, so an odd value can't be interpreted by the shell.
@@ -143,8 +151,8 @@ help:
 	@printf "  $(CYAN)make build$(RESET)             Create distributable zip\n"
 	@printf "  $(CYAN)make install$(RESET)           Install dev dependencies\n"
 	@printf "  $(CYAN)make ci$(RESET)                Run lint + test + build\n"
-	@printf "  $(CYAN)make release$(RESET)           Bump version, date changelog, open PR\n"
-	@printf "  $(CYAN)make tag$(RESET)               Tag merged release and push\n"
+	@printf "  $(CYAN)make release$(RESET)           Release: bump, changelog, PR, merge, tag\n"
+	@printf "  $(CYAN)make tag$(RESET)               Tag a merged release (fallback)\n"
 	@printf "  $(CYAN)make demo$(RESET)              Build demo extension for screenshots\n"
 	@printf "\n"
 
