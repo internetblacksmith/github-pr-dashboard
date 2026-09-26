@@ -108,8 +108,8 @@ make lint       # Run ESLint
 make build      # Create distributable zip
 make ci         # All of the above
 make demo       # Build demo extension for screenshots
-make release    # Bump version, date changelog, create PR
-make tag        # Tag merged release and push
+make release    # One-step release: bump, changelog, PR, auto-merge on green CI, tag
+make tag        # Fallback: tag an already-merged release
 ```
 
 ## License
