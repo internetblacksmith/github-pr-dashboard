@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `make release` is now one step: it opens the release PR, lets auto-merge land it once CI is green, and pushes the tag
 - Settings modal now has a section nav (Organisations, Teammates, Appearance) with a scrolling pane and a pinned Save button, so long org or teammate lists no longer grow the modal past the screen
 - Add a Teammates list in Settings; teammates’ open PRs join the Review Requested column, which is now ordered in three tiers with headers: needs your review, team needs a review, settled
 - Teammates’ PRs can be limited to your company’s organisations ("Only in these organisations"); empty means any repository

@@ -11,8 +11,8 @@ make build      # Create distributable zip
 make ci         # Run lint + test + build (mirrors CI pipeline)
 make install    # Install dev dependencies
 make demo       # Build demo extension for screenshots
-make release    # Interactive version bump, dates the changelog, opens a release PR
-make tag        # Tag a merged release (VERSION=x.y.z) and push the tag
+make release    # One-step release: bump, changelog, PR, auto-merge on green CI, tag
+make tag        # Fallback: tag an already-merged release (VERSION=x.y.z)
 ```
 
 ## Critical Rules
