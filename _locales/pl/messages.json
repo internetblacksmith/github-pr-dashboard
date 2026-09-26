@@ -35,6 +35,9 @@
   "setupTokenStep2": {
     "message": "Wklej go poni\u017cej"
   },
+  "setupTokenScopeNote": {
+    "message": "Zakres repo daje też dostęp do zapisu w Twoich repozytoriach — GitHub nie ma klasycznego zakresu tylko do odczytu. Jeśli potrzebujesz tylko repozytoriów publicznych, zaznacz public_repo."
+  },
   "setupTokenLabel": {
     "message": "Token GitHub"
   },
@@ -81,7 +84,7 @@
     "message": "Projekty osobiste"
   },
   "helpReviewRequested": {
-    "message": "Otwarte PR, w kt\u00f3rych kto\u015b poprosi\u0142 o Twoj\u0105 recenzj\u0119. Posortowane wed\u0142ug pilno\u015bci \u2014 nierozpocz\u0119te recenzje i starsze PR s\u0105 na g\u00f3rze."
+    "message": "Otwarte PR, w których ktoś poprosił o Twoją recenzję, plus otwarte PR Twoich współpracowników. Trzy grupy, od góry: PR czekające na Twoją recenzję, PR współpracowników, których nikt jeszcze nie zatwierdził, oraz wszystko już załatwione (wystarczy jedno zatwierdzenie). W każdej grupie posortowane według pilności."
   },
   "helpYourPrs": {
     "message": "PR, kt\u00f3re utworzy\u0142e\u015b. Nieodpowiedziane komentarze i wymagane zmiany s\u0105 wy\u015bwietlane pierwsze. PR w wersji roboczej maj\u0105 ni\u017cszy priorytet."
@@ -101,6 +104,9 @@
       }
     }
   },
+  "refreshing": {
+    "message": "Odświeżanie..."
+  },
   "filterAll": {
     "message": "Wszystkie"
   },
@@ -109,6 +115,18 @@
   },
   "tooltipClose": {
     "message": "Zamknij"
+  },
+  "settingsSectionsAria": {
+    "message": "Sekcje ustawień"
+  },
+  "settingsSectionOrgs": {
+    "message": "Organizacje"
+  },
+  "settingsSectionTeammates": {
+    "message": "Współpracownicy"
+  },
+  "settingsSectionAppearance": {
+    "message": "Wygląd"
   },
   "settingsOrgLabel": {
     "message": "Organizacje osobiste"
@@ -124,6 +142,57 @@
   },
   "settingsOrgColorsHint": {
     "message": "Dostosuj kolory badge\u2019\u00f3w dla organizacji widocznych na Twoim dashboardzie."
+  },
+  "settingsTeammatesLabel": {
+    "message": "Współpracownicy"
+  },
+  "settingsTeammatesHint": {
+    "message": "Nazwy użytkowników GitHub osób, którym robisz recenzje. Ich otwarte PR pojawiają się w kolumnie Prośby o recenzję nawet gdy nikt Cię nie poprosił, więc możesz włączyć się tam, gdzie coś czeka."
+  },
+  "settingsAddTeammate": {
+    "message": "+ Dodaj współpracownika"
+  },
+  "teammatePlaceholder": {
+    "message": "nazwa-github"
+  },
+  "tooltipRemoveTeammate": {
+    "message": "Usuń współpracownika"
+  },
+  "teammateInvalid": {
+    "message": "Nieprawidłowa nazwa użytkownika GitHub: $LOGINS$",
+    "placeholders": {
+      "logins": {
+        "content": "$1",
+        "example": "octo cat"
+      }
+    }
+  },
+  "settingsTeammateOrgsLabel": {
+    "message": "Tylko w tych organizacjach"
+  },
+  "settingsTeammateOrgsHint": {
+    "message": "Ogranicz PR współpracowników do organizacji GitHub Twojej firmy, aby ich projekty osobiste nie trafiały do kolumny. Zostaw puste, aby pokazywać PR z dowolnego repozytorium."
+  },
+  "settingsAddTeammateOrg": {
+    "message": "+ Dodaj organizację"
+  },
+  "teammateOrgInvalid": {
+    "message": "Nieprawidłowa nazwa organizacji GitHub: $NAMES$",
+    "placeholders": {
+      "names": {
+        "content": "$1",
+        "example": "acme corp"
+      }
+    }
+  },
+  "tierNeedsYou": {
+    "message": "Czeka na Twoją recenzję"
+  },
+  "tierTeamNeeds": {
+    "message": "Zespół potrzebuje recenzji"
+  },
+  "tierSettled": {
+    "message": "Załatwione"
   },
   "settingsThemeLabel": {
     "message": "Motyw"
@@ -174,7 +243,7 @@
     "message": "Konfiguracja nie powiod\u0142a si\u0119. Sprawd\u017a konsol\u0119."
   },
   "tokenScopes": {
-    "message": "Token nie ma wymaganych uprawnie\u0144. Upewnij si\u0119, \u017ce dost\u0119p do repozytori\u00f3w jest ustawiony na \u201eAll repositories\u201d, a uprawnienie Pull requests na \u201eRead\u201d."
+    "message": "Token nie ma wymaganych uprawnień. Utwórz klasyczny token z zakresem repo (lub public_repo tylko dla repozytoriów publicznych)."
   },
   "errorGitHub": {
     "message": "GitHub ma teraz problemy. Spr\u00f3buj od\u015bwie\u017cy\u0107 lub otw\u00f3rz now\u0105 kart\u0119 za chwil\u0119."
@@ -189,7 +258,7 @@
     "message": "Nie mo\u017cna po\u0142\u0105czy\u0107 si\u0119 z GitHubem. Sprawd\u017a po\u0142\u0105czenie internetowe i spr\u00f3buj ponownie."
   },
   "errorScopes": {
-    "message": "Token nie ma wystarczaj\u0105cych uprawnie\u0144. Spr\u00f3buj go usun\u0105\u0107 (przycisk wyloguj) i utworzy\u0107 nowy z dost\u0119pem do \u201eAll repositories\u201d i uprawnieniem Pull requests (Read)."
+    "message": "Token nie ma wystarczających uprawnień. Spróbuj go usunąć (przycisk wyloguj) i utworzyć nowy klasyczny token z zakresem repo."
   },
   "errorGeneric": {
     "message": "Co\u015b posz\u0142o nie tak podczas \u0142adowania PR. Spr\u00f3buj od\u015bwie\u017cy\u0107."
@@ -218,6 +287,9 @@
   "reasonReviewPending": {
     "message": "oczekuje na recenzj\u0119"
   },
+  "reasonTeamReview": {
+    "message": "potrzebna recenzja zespołu"
+  },
   "reasonDaysStale": {
     "message": "$COUNT$d nieaktywna",
     "placeholders": {
@@ -238,6 +310,12 @@
   },
   "statusReviewNeeded": {
     "message": "Wymagana recenzja"
+  },
+  "statusNeedsYourReview": {
+    "message": "Czeka na Twoją recenzję"
+  },
+  "statusTeamReviewNeeded": {
+    "message": "Potrzebna recenzja zespołu"
   },
   "statusDraft": {
     "message": "Wersja robocza"

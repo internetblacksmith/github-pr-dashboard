@@ -35,6 +35,9 @@
   "setupTokenStep2": {
     "message": "Incollalo qui sotto"
   },
+  "setupTokenScopeNote": {
+    "message": "Lo scope repo concede anche accesso in scrittura ai tuoi repository — GitHub non ha uno scope classico di sola lettura. Se ti servono solo i repository pubblici, seleziona public_repo."
+  },
   "setupTokenLabel": {
     "message": "Token GitHub"
   },
@@ -81,7 +84,7 @@
     "message": "Progetti personali"
   },
   "helpReviewRequested": {
-    "message": "PR aperte dove qualcuno ha richiesto la tua revisione. Ordinate per urgenza — le revisioni non iniziate e le PR meno recenti appaiono per prime."
+    "message": "PR aperte dove qualcuno ha richiesto la tua revisione, più le PR aperte dei tuoi colleghi. Tre gruppi, dall’alto in basso: PR che aspettano la tua revisione, PR dei colleghi che nessuno ha ancora approvato, e tutto ciò che è già sistemato (basta un’approvazione). Ordinate per urgenza in ogni gruppo."
   },
   "helpYourPrs": {
     "message": "PR che hai creato. Feedback senza risposta e richieste di modifiche appaiono per primi. Le PR bozza hanno una priorit\u00e0 inferiore."
@@ -101,6 +104,9 @@
       }
     }
   },
+  "refreshing": {
+    "message": "Aggiornamento in corso..."
+  },
   "filterAll": {
     "message": "Tutte"
   },
@@ -109,6 +115,18 @@
   },
   "tooltipClose": {
     "message": "Chiudi"
+  },
+  "settingsSectionsAria": {
+    "message": "Sezioni delle impostazioni"
+  },
+  "settingsSectionOrgs": {
+    "message": "Organizzazioni"
+  },
+  "settingsSectionTeammates": {
+    "message": "Colleghi"
+  },
+  "settingsSectionAppearance": {
+    "message": "Aspetto"
   },
   "settingsOrgLabel": {
     "message": "Organizzazioni personali"
@@ -124,6 +142,57 @@
   },
   "settingsOrgColorsHint": {
     "message": "Personalizza i colori dei badge per le organizzazioni che appaiono nella tua dashboard."
+  },
+  "settingsTeammatesLabel": {
+    "message": "Colleghi"
+  },
+  "settingsTeammatesHint": {
+    "message": "Username GitHub delle persone per cui fai revisioni. Le loro PR aperte compaiono in Revisione richiesta anche se nessuno te l’ha chiesto, così puoi intervenire su ciò che è in attesa."
+  },
+  "settingsAddTeammate": {
+    "message": "+ Aggiungi collega"
+  },
+  "teammatePlaceholder": {
+    "message": "username-github"
+  },
+  "tooltipRemoveTeammate": {
+    "message": "Rimuovi collega"
+  },
+  "teammateInvalid": {
+    "message": "Username GitHub non valido: $LOGINS$",
+    "placeholders": {
+      "logins": {
+        "content": "$1",
+        "example": "octo cat"
+      }
+    }
+  },
+  "settingsTeammateOrgsLabel": {
+    "message": "Solo in queste organizzazioni"
+  },
+  "settingsTeammateOrgsHint": {
+    "message": "Limita le PR dei colleghi alle organizzazioni GitHub della tua azienda, così i loro progetti personali restano fuori dalla colonna. Lascia vuoto per mostrare le PR di qualsiasi repository."
+  },
+  "settingsAddTeammateOrg": {
+    "message": "+ Aggiungi organizzazione"
+  },
+  "teammateOrgInvalid": {
+    "message": "Nome di organizzazione GitHub non valido: $NAMES$",
+    "placeholders": {
+      "names": {
+        "content": "$1",
+        "example": "acme corp"
+      }
+    }
+  },
+  "tierNeedsYou": {
+    "message": "Serve la tua revisione"
+  },
+  "tierTeamNeeds": {
+    "message": "Il team ha bisogno di una revisione"
+  },
+  "tierSettled": {
+    "message": "Sistemate"
   },
   "settingsThemeLabel": {
     "message": "Tema"
@@ -174,7 +243,7 @@
     "message": "Configurazione fallita. Controlla la console per i dettagli."
   },
   "tokenScopes": {
-    "message": "Il token non ha i permessi necessari. Assicurati che l\u2019accesso ai repository sia impostato su \u201cAll repositories\u201d e che il permesso Pull requests sia \u201cRead\u201d."
+    "message": "Il token non ha i permessi necessari. Crea un token classico con lo scope repo (o public_repo solo per i repository pubblici)."
   },
   "errorGitHub": {
     "message": "GitHub ha problemi in questo momento. Prova ad aggiornare, oppure apri una nuova scheda tra poco."
@@ -189,7 +258,7 @@
     "message": "Impossibile raggiungere GitHub. Controlla la connessione internet e riprova."
   },
   "errorScopes": {
-    "message": "Il token non ha permessi sufficienti. Prova a cancellarlo (pulsante disconnetti) e a crearne uno nuovo con accesso a \u201cAll repositories\u201d e permesso Pull requests (Read)."
+    "message": "Il token non ha permessi sufficienti. Prova a cancellarlo (pulsante disconnetti) e a crearne uno nuovo classico con lo scope repo."
   },
   "errorGeneric": {
     "message": "Qualcosa \u00e8 andato storto nel caricamento delle PR. Prova ad aggiornare."
@@ -218,6 +287,9 @@
   "reasonReviewPending": {
     "message": "revisione in attesa"
   },
+  "reasonTeamReview": {
+    "message": "revisione del team richiesta"
+  },
   "reasonDaysStale": {
     "message": "$COUNT$g inattiva",
     "placeholders": {
@@ -238,6 +310,12 @@
   },
   "statusReviewNeeded": {
     "message": "Revisione necessaria"
+  },
+  "statusNeedsYourReview": {
+    "message": "Serve la tua revisione"
+  },
+  "statusTeamReviewNeeded": {
+    "message": "Revisione del team richiesta"
   },
   "statusDraft": {
     "message": "Bozza"

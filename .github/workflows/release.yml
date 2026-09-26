@@ -4,13 +4,20 @@ on:
   push:
     tags: ["v*"]
 
+permissions:
+  contents: read
+
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .node-version
 
@@ -27,15 +34,16 @@ jobs:
 
       - name: Build Firefox xpi
         run: |
-          npx web-ext build --source-dir=. --artifacts-dir=. \
-            --ignore-files="node_modules/*" "test/*" "demo/*" "*.svg" \
-            "package*.json" "eslint.config.*" ".github/*" "AGENTS.md" \
-            "CLAUDE.md" "CHANGELOG.md" "PRIVACY.md" "README.md" ".gitignore" \
-            ".node-version" "docs/*" "Makefile"
+          # Directory names (not dir/*) so the xpi carries no empty folders;
+          # **/*.svg drops the icon sources that ship only as PNG.
+          npx --no-install web-ext build --source-dir=. --artifacts-dir=. \
+            --ignore-files "node_modules" "test" "demo" "demo-build" "docs" ".github" \
+            "**/*.svg" "package*.json" "eslint.config.*" "AGENTS.md" "CLAUDE.md" \
+            "CHANGELOG.md" "PRIVACY.md" "README.md" ".gitignore" ".node-version" "Makefile"
           mv github_pr_dashboard-*.zip github-pr-dashboard-firefox-unsigned.xpi
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           files: |
             github-pr-dashboard-chrome.zip

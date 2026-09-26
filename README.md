@@ -6,7 +6,7 @@ A Chrome/Firefox extension that replaces your new tab page with a dashboard of y
 
 Every new tab shows three columns:
 
-- **Review Requested** — PRs where someone asked for your review
+- **Review Requested** — PRs where someone asked for your review, plus your teammates’ open PRs. Three groups, top to bottom: **Needs your review**, **Team needs a review** (a teammate’s PR nobody has approved yet), and **Settled** (approved by anyone, one is enough, or already reviewed by you; dimmed)
 - **Your PRs** — PRs you opened, with review status and diff stats
 - **Personal Projects** — All open PRs across your repos and orgs
 
@@ -15,14 +15,15 @@ Each PR is ranked by an **attention score** (0-100) based on urgency signals:
 | Signal | Weight |
 |--------|--------|
 | Unresponded reviewer feedback | +30 |
-| Pending review you haven't started | +25 |
+| Review needed and nobody has approved yet | +25 |
+| Teammate’s PR nobody has approved yet | +15 |
 | Stale (>24h / >48h / >72h) | +5 / +10 / +15 |
 | Changes requested on your PR | +10 |
 | Draft PR | x0.5 |
 
 A coloured severity bar on each card tells you where to look first: red (act now), orange (on your radar), grey (all clear).
 
-When PRs span multiple orgs, a **filter bar** lets you toggle visibility by organisation.
+When PRs span multiple orgs, a **filter bar** lets you toggle visibility by organisation. The **All** pill is a toggle: with every org selected it clears them all, otherwise it selects them all.
 
 ## Install
 
@@ -63,7 +64,7 @@ If you want to create your own distributable zip:
 git clone https://github.com/internetblacksmith/github-pr-dashboard.git
 cd github-pr-dashboard
 make install    # installs dev dependencies (for tests/lint only)
-make build      # creates github-pr-dashboard.zip
+make build      # creates github-pr-dashboard-chrome.zip
 ```
 
 The build excludes tests, lint config, and dev files. Load the zip the same way as a release zip.
@@ -77,17 +78,22 @@ On first new tab, you'll be prompted to paste a GitHub token.
 1. [Create a personal access token](https://github.com/settings/tokens/new?description=GitHub%20PR%20Dashboard&scopes=repo) (link pre-fills the `repo` scope)
 2. Paste the token on the setup screen
 
+> **About the `repo` scope:** GitHub has no read-only classic scope, so `repo` also grants write access to your repositories even though the extension only ever reads. If you only need public repositories, tick `public_repo` instead. Fine-grained tokens can be read-only but must be enabled per org by an org admin, which is why the setup screen defaults to a classic token. Treat the token like a password: it lives only in this browser profile, and you can revoke it at any time from GitHub settings.
+
 ## Settings
 
-Click the gear icon to configure:
+Click the gear icon to open Settings. Sections are listed on the left (Organisations, Teammates, Appearance) and each one scrolls on its own, so long lists never push the Save button off screen.
 
 - **Personal organisations** — add orgs to see all their open PRs in the Personal Projects column. Drag to reorder — PRs are grouped by org in this order. Work orgs don't need to be here; your authored and review-requested PRs show up automatically. Orgs not in this list appear last, sorted alphabetically.
 - **Org colours** — customise badge colours for any org on the dashboard. Orgs in the personal list get their picker inline; other orgs appear in a separate section below.
+- **Teammates** — GitHub usernames of the people you review for (no GitHub team needed). Their open PRs join the Review Requested column even when nobody asked you, so a PR that is waiting on a review gets noticed. One approval from anyone settles it. Add your company’s organisations under **Only in these organisations** to keep their personal projects out; leave it empty to see PRs from any repository.
 - **Theme** — Light, Dark, or System (follows OS preference).
 
 ## Architecture
 
-No build step, no framework, no external CDN. Vanilla HTML/CSS/JS for instant load times. The token stays in `chrome.storage.local` and never leaves your device. Network is restricted to `api.github.com` only.
+No build step, no framework, no external CDN. Vanilla HTML/CSS/JS for instant load times. The token stays in `chrome.storage.local` and never leaves your device. The only network calls are to `api.github.com`, plus avatar images from GitHub.
+
+Results are cached for 10 minutes. After that, the cached dashboard still shows instantly while a fresh copy loads in the background; if GitHub is unreachable, the last good data stays on screen with an error banner.
 
 Available in English, Italian, and Polish — uses the browser's language setting automatically.
 
@@ -102,7 +108,7 @@ make lint       # Run ESLint
 make build      # Create distributable zip
 make ci         # All of the above
 make demo       # Build demo extension for screenshots
-make release    # Bump version and create PR
+make release    # Bump version, date changelog, create PR
 make tag        # Tag merged release and push
 ```
 

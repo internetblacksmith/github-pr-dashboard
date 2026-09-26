@@ -1,7 +1,8 @@
 /**
  * Demo drop-in replacement for github.js.
  *
- * Same public API (t, fetchUsername, fetchDashboardData, hasUnrespondedComments)
+ * Same public API (t, fetchUsername, fetchDashboardData, hasUnrespondedComments,
+ * isValidLogin)
  * but returns hardcoded data instead of calling the GitHub API.
  *
  * Used by `make demo` to produce a screenshot-ready extension build
@@ -35,12 +36,15 @@ function makeDemoPr(org, repo, number, title, author, hoursAgo, isDraft, reviewD
     repository: { nameWithOwner: org + "/" + repo },
     author: {
       login: author,
-      avatarUrl: "https://ui-avatars.com/api/?name=" + author + "&background=random&size=56",
+      // GitHub identicons: deterministic per name, and on an allowlisted host
+      avatarUrl: "https://github.com/identicons/" + author + ".png",
     },
     reviewDecision: reviewDecision,
     additions: additions,
     deletions: deletions,
-    reviews: { nodes: author === DEMO_USERNAME ? [] : [{ author: { login: DEMO_USERNAME } }] },
+    // Approved PRs carry someone else's approval so the demo shows both
+    // "needs your review" (highlighted) and settled (dimmed) cards.
+    reviews: { nodes: reviewDecision === "APPROVED" ? [{ author: { login: "alice", state: "APPROVED" }, state: "APPROVED" }] : [] },
     reviewThreads: { nodes: threads },
   };
 }
@@ -49,9 +53,9 @@ var DEMO_DATA = {
   username: DEMO_USERNAME,
   reviewRequested: [
     makeDemoPr("acme-corp", "api-gateway", 342, "Add rate limiting middleware", "alice", 2, false, null, 45, 12, []),
-    makeDemoPr("acme-corp", "web-app", 189, "Migrate auth to OAuth 2.1", "bob", 48, false, null, 312, 87, []),
+    makeDemoPr("acme-corp", "web-app", 189, "Migrate auth to OAuth 2.1", "bob", 48, false, "APPROVED", 312, 87, []),
     makeDemoPr("acme-corp", "api-gateway", 340, "Fix connection pool exhaustion under load", "charlie", 6, false, null, 28, 9, []),
-    makeDemoPr("opensource-tools", "cli-framework", 78, "Add shell completion for zsh", "diana", 72, false, null, 156, 23, []),
+    makeDemoPr("opensource-tools", "cli-framework", 78, "Add shell completion for zsh", "diana", 72, false, "APPROVED", 156, 23, []),
   ],
   authored: [
     makeDemoPr("acme-corp", "web-app", 195, "Refactor dashboard state management", DEMO_USERNAME, 24, false, "CHANGES_REQUESTED", 89, 34,
@@ -60,6 +64,11 @@ var DEMO_DATA = {
     makeDemoPr("opensource-tools", "cli-framework", 76, "Add JSON output format for all commands", DEMO_USERNAME, 96, false, null, 234, 45,
       [{ isResolved: false, comments: { nodes: [{ author: { login: "eve" } }] } }]),
     makeDemoPr("acme-corp", "web-app", 197, "WIP: Dark mode support", DEMO_USERNAME, 1, true, null, 567, 123, []),
+  ],
+  // Teammates' PRs nobody asked us about: one still needs a review, one is settled
+  teammatePrs: [
+    makeDemoPr("acme-corp", "billing-service", 512, "Retry failed invoice webhooks with backoff", "erin", 30, false, null, 74, 18, []),
+    makeDemoPr("acme-corp", "web-app", 201, "Upgrade design tokens to v3", "frank", 5, false, "APPROVED", 210, 190, []),
   ],
   personalPrs: [
     makeDemoPr("demouser", "dotfiles", 12, "Update neovim config for v0.10", DEMO_USERNAME, 168, false, null, 45, 12, []),
@@ -73,7 +82,11 @@ async function fetchUsername() {
   return DEMO_USERNAME;
 }
 
-async function fetchDashboardData(token, personalOrgs, onStatus) {
+function isValidLogin(login) {
+  return typeof login === "string" && /^[a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?$/.test(login);
+}
+
+async function fetchDashboardData(token, config, onStatus) {
   var status = onStatus || function () {};
 
   // Simulate the real loading sequence so status messages appear briefly

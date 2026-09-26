@@ -7,6 +7,7 @@ export default [
       globals: {
         // Browser
         window: "readonly",
+        location: "readonly",
         document: "readonly",
         console: "readonly",
         fetch: "readonly",
@@ -29,6 +30,8 @@ export default [
         fetchDashboardData: "readonly",
         hasUnrespondedComments: "readonly",
         scorePr: "readonly",
+        isDirectlyRequested: "readonly",
+        isValidLogin: "readonly",
       },
     },
     rules: {
